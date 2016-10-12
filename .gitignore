@@ -210,3 +210,12 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+
+# Ignore "Log.txt" and Database file.
+Log.txt
+*.opendb
+
+#Ignore Resourse Files
+Data/
+Graphic/
+音楽/
