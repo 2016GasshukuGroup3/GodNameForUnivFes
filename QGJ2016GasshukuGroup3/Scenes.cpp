@@ -712,7 +712,7 @@ void drillAttack2(Tile* drill) {
 	for (int i = 0; i < drillcount; ++i) {
 		int dir = drill[i].dir;
 		if (drill[i].flag) {
-			MapTiles[drill[i].x / 32][drill[i].y / 32] = -1;
+			// MapTiles[drill[i].x / 32][drill[i].y / 32] = -1;
 			drill[i].dx = -5 * dx[dir];
 			drill[i].dy = -5 * dy[dir];
 			drill[i].flag = false;
