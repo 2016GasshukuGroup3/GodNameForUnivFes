@@ -582,7 +582,7 @@ STATE game() {
 		}
 		//—Ž‚¿‚Ä‚­‚é‹…
 		for (int i = 0; i < ballcount; ++i) {
-			if (ball[i].flag)
+		//	if (ball[i].flag)
 				DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
 		}
 

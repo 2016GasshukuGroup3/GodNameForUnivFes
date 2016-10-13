@@ -214,6 +214,7 @@ ModelManifest.xml
 # Ignore "Log.txt" and Database file.
 Log.txt
 *.opendb
+*.db
 
 #Ignore Resourse Files
 Data/
