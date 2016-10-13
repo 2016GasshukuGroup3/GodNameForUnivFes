@@ -23,9 +23,9 @@ STATE title() {
 
 		//音楽のための変数と読み込み
 		Sound1 = LoadSoundMem("音楽/合宿QGJ_タイトル.ogg");
-//		ChangeVolumeSoundMem(216, Sound1);
+		//		ChangeVolumeSoundMem(216, Sound1);
 		Sound2 = LoadSoundMem("音楽/合宿QGJ_メイン.ogg");
-	//	ChangeVolumeSoundMem(216, Sound2);
+		//	ChangeVolumeSoundMem(216, Sound2);
 		Sound3 = LoadSoundMem("音楽/合宿QGJ_リザルト.ogg");
 		//ChangeVolumeSoundMem(216, Sound3);
 		KetteiSound = LoadSoundMem("音楽/合宿QGJ_SE_決定音.ogg");
@@ -38,7 +38,7 @@ STATE title() {
 	}
 	else {
 		// キーの入力待ち
-		if (getKeyPress(KEY_INPUT_SPACE,PRESS_ONCE)) {
+		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 			// 作成したフォントデータを削除する
 			DeleteFontToHandle(FontHandle);
 			StopSoundMem(Sound1);
@@ -47,7 +47,7 @@ STATE title() {
 		}
 
 		//タイトル描画
-		
+
 
 		// 読みこんだグラフィックを画面左上に描画
 		DrawGraph(0, 0, titleHandle, TRUE);
@@ -79,7 +79,7 @@ struct Player {
 
 Player player;
 
-bool Player::OnCollideFromSide(int& tileid, int, int) {
+bool Player::OnCollideFromSide(int& tileid, int i, int j) {
 	x = 0;
 
 	if (tileid == 3) {
@@ -88,8 +88,15 @@ bool Player::OnCollideFromSide(int& tileid, int, int) {
 
 	for (int id : { 5, 6, 7, 8 }) {
 		if (tileid == id) {
-			// 死亡
-			deathcount2++;
+			if (Shape::Rectangle_t(i * MapTile::MapSize + 1, j * MapTile::MapSize + 1, MapTile::MapSize - 2, MapTile::MapSize - 2).
+				IntersectWith(Rectangle_t{ x, y, width, height })) {
+
+				// 死亡
+				deathcount2++;
+			}
+			else {
+				return true;
+			}
 		}
 	}
 
@@ -97,7 +104,7 @@ bool Player::OnCollideFromSide(int& tileid, int, int) {
 	return false;
 }
 
-bool Player::OnCollideFromBottom(int& tileid, int, int) {
+bool Player::OnCollideFromBottom(int& tileid, int i, int j) {
 	if (tileid == 3) {
 		return true;
 	}
@@ -106,8 +113,15 @@ bool Player::OnCollideFromBottom(int& tileid, int, int) {
 
 	for (int id : { 5, 6, 7, 8 }) {
 		if (tileid == id) {
-			// 死亡
-			deathcount2++;
+			if (Shape::Rectangle_t(i * MapTile::MapSize + 1, j * MapTile::MapSize + 1, MapTile::MapSize - 2, MapTile::MapSize - 2).
+				IntersectWith(Rectangle_t{ x, y, width, height })) {
+
+				// 死亡
+				deathcount2++;
+			}
+			else {
+				return true;
+			}
 		}
 	}
 
@@ -124,14 +138,22 @@ bool Player::OnCollideFromTop(int& tileid, int i, int j) {
 		//*(tileobjptr - 1) = 2;
 		//*(tileobjptr - 15) = 2;
 		//*(tileobjptr + 15) = 2;
-	} else if (tileid == 3) {
+	}
+	else if (tileid == 3) {
 		return true;
 	}
 
 	for (int id : { 5, 6, 7, 8 }) {
 		if (tileid == id) {
-			// 死亡
-			deathcount2++;
+			if (Shape::Rectangle_t(i * MapTile::MapSize + 1, j * MapTile::MapSize + 1, MapTile::MapSize - 2, MapTile::MapSize - 2).
+				IntersectWith(Rectangle_t{ x, y, width, height })) {
+
+				// 死亡
+				deathcount2++;
+			}
+			else {
+				return true;
+			}
 		}
 	}
 
@@ -162,7 +184,7 @@ static int LiftCount = 0;
 bool Checkhitchery(int x1, int y1, int width1, int height1, int x2, int y2, int width2, int height2) {
 	if (x1 < (x2 + width2)) {
 		if ((x1 + width1) > x2) {
-			if (y1 < (y2 + height2) ) {
+			if (y1 < (y2 + height2)) {
 				if ((y1 + height1) >y2) {
 					return true;
 				}
@@ -199,11 +221,11 @@ int MapTiles[MapTilesWidth][MapTilesHeight];
 bool IsDrillHit(Player p, Tile t) {
 	int dir = t.dir;
 	if (dir == 0 || dir == 2) {
-		if (t.x -1<= p.x + p.width ) {
+		if (t.x - 1 <= p.x + p.width) {
 			return true;
 		}
 	}
-	else if ((dir == 1)&& p.y <= t.y + t.height && t.x - p.x >= 0 && t.x - p.x < 32 * 3) {
+	else if ((dir == 1) && p.y <= t.y + t.height && t.x - p.x >= 0 && t.x - p.x < 32 * 3) {
 		return true;
 	}
 	else if (dir == 3 && p.y <= t.y + t.height && p.x - t.x >= 0) {
@@ -212,10 +234,10 @@ bool IsDrillHit(Player p, Tile t) {
 	return false;
 }
 
-void drillAttack(Tile* drill ) {
+void drillAttack(Tile* drill) {
 	for (int i = 0; i < drillcount; ++i) {
-			int dir = drill[i].dir;
-		if ( drill[i].flag &&  IsDrillHit(player,drill[i])) {
+		int dir = drill[i].dir;
+		if (drill[i].flag &&  IsDrillHit(player, drill[i])) {
 			MapTiles[drill[i].x / 32][drill[i].y / 32] = -1;
 			drill[i].dx = -10 * dx[dir];
 			drill[i].dy = -10 * dy[dir];
@@ -253,7 +275,7 @@ void moveBridge(Tile *b) {
 }
 
 bool gameflag = false;
-int BackImageHandle, jimen,toge[4], hasi, ballHandle;
+int BackImageHandle, jimen, toge[4], hasi, ballHandle;
 int JumpSound, KilledSound;
 int timer;
 int PlayerImageHandles[3];
@@ -312,7 +334,7 @@ STATE game() {
 		jimen = LoadGraph("Graphic/Jimen.png");
 		hasi = LoadGraph("Graphic/Hasi.png");
 		for (int i = 0; i < 4; ++i) {
-			toge[i] = LoadGraph((string("Graphic/toge") + to_string(i)+ ".png").c_str());
+			toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
 		}
 		ballHandle = LoadGraph("Graphic/ball.png");
 		JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
@@ -334,7 +356,7 @@ STATE game() {
 		Lifts[3].MyPattern = Lift::UpAndDown;
 		Lifts[3].X = 32;
 		Lifts[3].Y = 32 * 6;
-		LiftCount = 4;
+		LiftCount = 0;
 
 		// player を初期化
 		mv = MapViewer(1);
@@ -378,7 +400,7 @@ STATE game() {
 		}
 		gameflag = true;
 	}
-	else{
+	else {
 		// 強制終了コマンド
 		if (CheckHitKey(KEY_INPUT_ESCAPE)) {
 			StopSoundMem(Sound2);
@@ -466,7 +488,8 @@ STATE game() {
 				if (static_cast<bool>(player.CollidedDirection & Direction::Right) && player.x <= NewX) {
 					NewX = player.x;
 				}
-			} else if (DefDeltaX - Lifts[i].GetCollider().DeltaX < 0) {
+			}
+			else if (DefDeltaX - Lifts[i].GetCollider().DeltaX < 0) {
 				if (static_cast<bool>(player.CollidedDirection & Direction::Left) && player.x >= NewX) {
 					NewX = player.x;
 				}
@@ -503,7 +526,7 @@ STATE game() {
 
 			player.deathcount1 = player.deathcount2;
 			for (int i = 0; i < 30; ++i) {
-				auto p = (new Particle(player.x,player.y));
+				auto p = (new Particle(player.x, player.y));
 				particle.Factory(p);
 			}
 			Initialization(stagenum, mv);
@@ -578,7 +601,7 @@ STATE game() {
 			DrawGraph(drill[i].x, drill[i].y, toge[drill[i].dir], TRUE);
 		}
 		for (int i = 0; i < inviscount; ++i) {
-			if(invis[i].flag)
+			if (invis[i].flag)
 				DrawGraph(invis[i].x, invis[i].y, jimen, TRUE);
 		}
 
@@ -610,7 +633,7 @@ STATE game() {
 		//死亡回数、ステージ、残り時間の表示
 		DrawFormatString(500, 0, Cr, "Death Count %d", player.deathcount1);
 		DrawFormatString(500, 20, Cr, "Stage %d", stagenum);
-		DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer/60)/60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+		DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
 
 		if (player.x >= 608) {
 			if (stagenum >= 5) {
@@ -685,10 +708,10 @@ Boss::Boss() {
 	Init();
 }
 
-void drillAttack2(Tile* drill ) {
+void drillAttack2(Tile* drill) {
 	for (int i = 0; i < drillcount; ++i) {
-			int dir = drill[i].dir;
-		if ( drill[i].flag) {
+		int dir = drill[i].dir;
+		if (drill[i].flag) {
 			MapTiles[drill[i].x / 32][drill[i].y / 32] = -1;
 			drill[i].dx = -5 * dx[dir];
 			drill[i].dy = -5 * dy[dir];
@@ -726,7 +749,7 @@ void Boss::Init() {
 	}
 	for (int j = 0; j < H; ++j) {
 		int i = 0;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[0][j].SetHandle(toge[3]);
 		tile[0][j].kind = 3;
 		tile[0][j].pattern = 0;
@@ -734,7 +757,7 @@ void Boss::Init() {
 	}
 	for (int j = 0; j < H; ++j) {
 		int i = W - 1;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[i][j].SetHandle(toge[1]);
 		tile[i][j].kind = 5;
 		tile[i][j].pattern = 0;
@@ -742,7 +765,7 @@ void Boss::Init() {
 	}
 	for (int i = 0; i < W; ++i) {
 		int j = 0;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[i][j].SetHandle(toge[2]);
 		tile[i][j].kind = 5;
 		tile[i][j].pattern = 0;
@@ -750,40 +773,40 @@ void Boss::Init() {
 	}
 	for (int i = 0; i < W; ++i) {
 		int j = H - 1;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[i][j].SetHandle(toge[0]);
 		tile[i][j].kind = 5;
 		tile[i][j].pattern = 0;
 		MapTiles[i][j] = 5;
 	}
 	//足場
-	for (int i : {1, 3,5, 13,15,17}) {
+	for (int i : {1, 3, 5, 13, 15, 17}) {
 		int j = 9;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[i][j].SetHandle(jimen);
 		tile[i][j].SetPattern(1, 0);
 		tile[i][j].kind = 0;
 		MapTiles[i][j] = 0;
 	}
-	for (int i : {7,9,11}) {
+	for (int i : {7, 9, 11}) {
 		int j = 10;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[i][j].SetHandle(jimen);
 		tile[i][j].SetPattern(1, 0);
 		tile[i][j].kind = 0;
 		MapTiles[i][j] = 0;
 	}
-	for (int i : {2,4,14,16}) {
+	for (int i : {2, 4, 14, 16}) {
 		int j = 9;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[i][j].SetHandle(jimen);
 		tile[i][j].SetPattern(2, 0);
 		tile[i][j].kind = 0;
 		MapTiles[i][j] = 0;
 	}
-	for (int i : {6,8,10,12}) {
+	for (int i : {6, 8, 10, 12}) {
 		int j = 10;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[i][j].SetHandle(jimen);
 		tile[i][j].SetPattern(2, 0);
 		tile[i][j].kind = 0;
@@ -791,7 +814,7 @@ void Boss::Init() {
 	}
 	for (int i : {3, 15}) {
 		int j = 6;
-		tile[i][j].PosSet(Pos(i*32,j*32));
+		tile[i][j].PosSet(Pos(i * 32, j * 32));
 		tile[i][j].SetHandle(jimen);
 		tile[i][j].SetPattern(0, 0);
 		tile[i][j].kind = 0;
@@ -883,14 +906,14 @@ void Boss::Update() {
 		PlaySoundMem(ThrowSound, DX_PLAYTYPE_BACK);
 	}
 	if (time >= 200) {
-		int i, j,k =0,dir;
+		int i, j, k = 0, dir;
 		switch (hp)
 		{
 		case 6:
 		case 5:
 			drillcount = 4;
-			i = (GetRand(1)) ? 0: W-1 ;
-			dir = (i == 0) ? 3: 1;
+			i = (GetRand(1)) ? 0 : W - 1;
+			dir = (i == 0) ? 3 : 1;
 			for (j = 0; j < H; ++j) {
 				if (MapTiles[i][j] >= drillsuf - 4 && GetRand(1)) {//動くトゲ
 					drill[k] = Tile{ (i + k * dx[dir]) * 32, j * 32, 0, 0, 32, 32,true,true, dir };
