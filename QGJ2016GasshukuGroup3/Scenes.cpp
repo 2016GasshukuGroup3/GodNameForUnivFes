@@ -832,6 +832,7 @@ int ThrowSound = -1;
 
 void Boss::Update() {
 	++time;
+	// 時間経過によって床の配置を変える
 	for (int i = 0; i < W; ++i) {
 		for (int j = 0; j < H; ++j) {
 			tile[i][j].Update();
@@ -849,6 +850,7 @@ void Boss::Update() {
 			}
 		}
 	}
+	// 動くとげの更新
 	drillAttack2(drill);
 	// 入力に応じて、プレイヤーのスピードを変える
 	if (CheckHitKey(KEY_INPUT_LEFT)) {
@@ -865,7 +867,7 @@ void Boss::Update() {
 		player.AnimationFlame = 0;
 		player.dx = player.FloorDeltaX;
 	}
-
+	// ジャンプの処理
 	if (CheckHitKey(KEY_INPUT_SPACE) && player.fly == 0) {
 		player.dy = -20;
 		player.fly = 1;
@@ -876,7 +878,9 @@ void Boss::Update() {
 	if (player.dy > 10) {
 		player.dy = 10;
 	}
+	// プレイヤーのあたり判定
 	CollisionCheck(player, MapTiles, 32, -1);
+	// プレイヤーが画面の領域外に行ったらアウト
 	if (player.y > 375 || player.x < 32 || player.x > 596 || player.y < 32) {
 		for (int i = 0; i < 50; ++i) {
 			auto pt = new Particle(player.x, player.y);
@@ -888,6 +892,7 @@ void Boss::Update() {
 		player.fly = 0;
 		player.deathcount2++;
 	}
+	// 死亡処置
 	else if (player.deathcount1 < player.deathcount2) {
 		player.deathcount1 = player.deathcount2;
 		for (int i = 0; i < 50; ++i) {
@@ -899,12 +904,14 @@ void Boss::Update() {
 		time = 0;
 		return;
 	}
+	// 血しぶきのエフェクトの更新
 	particle.UpdateParticles();
 	if (time >= 170 && !flag) {
 		flag = true;
 		time2 = 0;
 		PlaySoundMem(ThrowSound, DX_PLAYTYPE_BACK);
 	}
+	// 時間経過によってトゲを飛ばす
 	if (time >= 200) {
 		int i, j, k = 0, dir;
 		switch (hp)
@@ -967,11 +974,13 @@ void Boss::Update() {
 }
 
 void Boss::Draw() {
+	// ボスの腕の動き
 	if (!flag) {
 		ax = -40, ay = -100;
 	}
 	else {
 		++time2;
+		// 複素数を使った回転処理
 		complex<double> ci(-40, -100);
 		if (time2 < 30) {
 			ci = polar(abs(ci), arg(ci) + DTOR(45.0));
@@ -987,17 +996,22 @@ void Boss::Draw() {
 	}
 	DrawGraph(ax, ay, arm, TRUE);
 	DrawGraph(0, 0, body, TRUE);
+	// 死亡回数の表示
 	DrawFormatString(500, 40, blue, "%d", player.deathcount2);
+	// プレイヤーの描画
 	if (player.FaceDirection == Player::Direction::Direction_Left) {
 		DrawTurnGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
 	}
 	else {
 		DrawGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
 	}
+	// トゲの描画
 	for (int i = 0; i < drillcount; ++i) {
 		DrawGraph(drill[i].x, drill[i].y, toge[drill[i].dir], TRUE);
 	}
+	// 血しぶきのエフェクトの描画
 	particle.DrawParticles();
+	// 床および固定のトゲの描画
 	for (int i = 0; i < W; ++i) {
 		for (int j = 0; j < H; ++j) {
 			if (tile[i][j].pattern <= 1) {
@@ -1007,18 +1021,35 @@ void Boss::Draw() {
 	}
 }
 
+// ゲームオーバーかどうか
 bool Boss::IsOver() {
+	// ゲームオーバーの条件をここに追加
 	return gameover;
+	// この書き方は次の書き方と同じ
+	// if (gameover) {
+	//		return true;
+	// } else {
+	//		return false;
+	// }
 }
 
+// ゲームクリアしたかどうか
 bool Boss::IsEnd() {
+	// ゲームクリアの条件をここに追加
 	return time >= 60 * 30 || hp <= 0;
+	// この書き方は次の書き方と同じ
+	// if (time >= 60 * 30 || hp <= 0) {
+	//		return true;
+	// } else {
+	//		return false;
+	// }
 }
 
 Boss enemy;
 
 STATE boss() {
 	if (!bossflag) {
+		// ボス面の初期化
 		enemy.Init();
 		bossflag = true;
 		SetLoopPosSoundMem(9600, enemy.bgm);
@@ -1031,12 +1062,14 @@ STATE boss() {
 	else {
 		enemy.Update();
 		enemy.Draw();
+		// ゲームオーバーになっていた時
 		if (enemy.IsOver()) {
 			if (CheckSoundMem(enemy.bgm) == 0) {
 				StopSoundMem(enemy.bgm);
 			}
 			return GAMEOVER;
 		}
+		// ゲームクリアした時
 		if (enemy.IsEnd()) {
 			if (CheckSoundMem(enemy.bgm) == 0) {
 				StopSoundMem(enemy.bgm);
