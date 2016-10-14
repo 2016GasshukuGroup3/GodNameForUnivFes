@@ -6,6 +6,7 @@ class Lift {
 	int Flames;
 	CMap MyMap;
 	int GraphHandle;
+	int CurrentWidth;
 public:
 	// 初期位置
 	__declspec(property(get = GetX, put = SetX))
@@ -13,6 +14,11 @@ public:
 	// 初期位置
 	__declspec(property(get = GetY, put = SetY))
 	int Y;
+	// リフトの幅（タイル単位）
+	__declspec(property(get = GetWidth, put = SetWidth))
+	int Width;
+
+	bool IsEnabled;
 
 	void SetX(int x) {
 		MyMap.X = x - 20 * MapTile::MapSize;
@@ -30,11 +36,26 @@ public:
 		return MyMap.Y + 25 * MapTile::MapSize;
 	}
 
+	void SetWidth(int width) {
+		MyMap.Fill(-1);
+		CurrentWidth = width;
+
+		for (int i = 20; i < 20 + width; i++) {
+			MyMap[i][25] = 0;
+		}
+	}
+
+	int GetWidth() {
+		return CurrentWidth;
+	}
+
 	// 動くパターン
 	enum MovePattern {
-		Side,
-		UpAndDown,
-		Rotation
+		Side,		// 左右に移動
+		UpAndDown,	// 上下に移動
+		Rotation,	// 回転
+		DoNotMove,	// 動かない
+		Fall		// 落ちる
 	} MyPattern;
 
 	Lift();

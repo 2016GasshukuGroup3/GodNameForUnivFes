@@ -6,20 +6,18 @@
 
 Lift::Lift() :
 	MyMap(60, 45, -1),
-	GraphHandle(-1) {
-	
-	for (int i : { 20, 21, 22, 23, 24, 25 }) {
-		MyMap[i][25] = 0;
-	}
+	GraphHandle(-1),
+	IsEnabled(false) {
+	SetWidth(6);
 }
 
 void Lift::Initialize() {
 	if (GraphHandle == -1) {
-		GraphHandle = MakeScreen(32 * 6, 32);
+		GraphHandle = MakeScreen(32 * CurrentWidth, 32);
 		int TempGraph = LoadGraph("Graphic/Jimen.png");
 		SetDrawScreen(GraphHandle);
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < CurrentWidth; i++) {
 			assert(DrawGraph(32 * i, 0, TempGraph, FALSE) == 0 || TempGraph == -1);
 		}
 		DeleteGraph(TempGraph);
@@ -39,7 +37,7 @@ void Lift::Update() {
 				MyMap.DeltaX = 2;
 			} else if (Flames == 80) {
 				MyMap.DeltaX = -2;
-			} else if (Flames == 160 - 1) {
+			} else if (Flames >= 160 - 1) {
 				Flames = -1;
 			}
 			break;
@@ -48,7 +46,7 @@ void Lift::Update() {
 				MyMap.DeltaY = 2;
 			} else if (Flames == 80) {
 				MyMap.DeltaY = -2;
-			} else if (Flames == 160 - 1) {
+			} else if (Flames >= 160 - 1) {
 				Flames = -1;
 			}
 			break;
@@ -56,10 +54,20 @@ void Lift::Update() {
 			MyMap.DeltaX = static_cast<int>(3 * cos(Flames * 2 * DX_PI / 360));
 			MyMap.DeltaY = static_cast<int>(3 * sin(Flames * 2 * DX_PI / 360));
 			
-			if (Flames == 360 - 1) {
+			if (Flames >= 360 - 1) {
 				Flames = -1;
 			}
+			break;
+		case Lift::Fall:
+			MyMap.DeltaX = 0;
+
+			if (Flames % 10 == 0 && MyMap.DeltaY <= 5) {
+				MyMap.DeltaY += 1;
+			}
+			break;
 		default:
+			MyMap.DeltaX = 0;
+			MyMap.DeltaY = 0;
 			break;
 	}
 

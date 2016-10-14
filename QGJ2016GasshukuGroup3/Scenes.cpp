@@ -300,6 +300,7 @@ void Initialization(int map, MapViewer &mv) {
 
 	for (auto& Item : Lifts) {
 		Item.Initialize();
+		Item.Width = 6;
 	}
 }
 
@@ -640,7 +641,7 @@ STATE game() {
 		DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
 
 		if (player.x >= 608) {
-			if (stagenum >= 5) {
+			if (stagenum >= 1) {
 				gameflag = false;
 				if (CheckSoundMem(Sound2) == 1) {
 					StopSoundMem(Sound2);
@@ -741,6 +742,13 @@ void Boss::Init() {
 	time = 0;
 	maxhp = hp = 6;
 	player.x = 60, player.y = 100;
+
+	for (auto& Item : Lifts) {
+		Item.Width = 1;
+		Item.IsEnabled = false;
+		Item.Initialize();
+	}
+
 	//トゲ
 	tile = vector<vector<Rect>>(W, vector<Rect>(H));
 	for (int i = 0; i < TILE_MAX; ++i) {
@@ -834,14 +842,46 @@ void Boss::Init() {
 
 int ThrowSound = -1;
 
+void UpdateLift() {
+	// リフトの更新
+	for (int i = 0; i < TILE_MAX; i++) {
+		//if (Lifts[i].IsEnabled) {
+			Lifts[i].Update();
+
+			if (Lifts[i].Y > MapTile::MapSize * 15) {
+				Lifts[i].IsEnabled = false;
+				Lifts[i].MyPattern = Lift::DoNotMove;
+			}
+		//}
+	}
+}
+
+void SetLift(int x, int y) {
+	for (auto& Item : Lifts) {
+		if (!Item.IsEnabled) {
+			Item.X = x * MapTile::MapSize;
+			Item.Y = y * MapTile::MapSize;
+			Item.MyPattern = Lift::Fall;
+			Item.IsEnabled = true;
+			break;
+		}
+	}
+}
+
 void Boss::Update() {
 	++time;
 	// 時間経過によって床の配置を変える
 	for (int i = 0; i < W; ++i) {
 		for (int j = 0; j < H; ++j) {
+			int PreviousPattern = tile[i][j].pattern;
+
 			tile[i][j].Update();
 			if (tile[i][j].pattern == 2) {
 				MapTiles[i][j] = -1;
+
+				if (PreviousPattern == 1) {
+					SetLift(i, j);
+				}
 			}
 			if (tile[i][j].pattern == 1) {
 				MapTiles[i][j] = 0;
@@ -882,8 +922,57 @@ void Boss::Update() {
 	if (player.dy > 10) {
 		player.dy = 10;
 	}
-	// プレイヤーのあたり判定
+
+	UpdateLift();
+
+	// あたり判定を行う。
+	player.FloorDeltaX = 0;
+	player.CollidedDirection = Direction::None;
+
+	int DefX = player.x, DefY = player.y;
+	int DefDeltaX = player.dx, DefDeltaY = player.dy;
 	CollisionCheck(player, MapTiles, 32, -1);
+	int NewX = player.x, NewY = player.y;
+	int TempCollideDirection = Direction::None;
+	TempCollideDirection = player.CollidedDirection;
+
+	for (int i = 0; i < TILE_MAX; i++) {
+		if (!Lifts[i].IsEnabled) {
+			continue;
+		}
+
+		player.CollidedDirection = Direction::None;
+		player.x = DefX; player.y = DefY;
+		CollisionCheck(player, Lifts[i].GetCollider(), -1);
+
+		if (DefDeltaX - Lifts[i].GetCollider().DeltaX > 0) {
+			if (static_cast<bool>(player.CollidedDirection & Direction::Right) && player.x <= NewX) {
+				NewX = player.x;
+			}
+		}
+		else if (DefDeltaX - Lifts[i].GetCollider().DeltaX < 0) {
+			if (static_cast<bool>(player.CollidedDirection & Direction::Left) && player.x >= NewX) {
+				NewX = player.x;
+			}
+		}
+
+		if (DefDeltaY - Lifts[i].GetCollider().DeltaY > 0) {
+			if (static_cast<bool>(player.CollidedDirection & Direction::Down) && player.y <= NewY) {
+				NewY = player.y;
+			}
+		}
+		else if (DefDeltaY - Lifts[i].GetCollider().DeltaY < 0) {
+			if (static_cast<bool>(player.CollidedDirection & Direction::Up) && player.y >= NewY) {
+				NewY = player.y;
+			}
+		}
+
+		TempCollideDirection |= player.CollidedDirection;
+	}
+
+	player.x = NewX;
+	player.y = NewY;
+
 	// プレイヤーが画面の領域外に行ったらアウト
 	if (player.y > 375 || player.x < 32 || player.x > 596 || player.y < 32) {
 		for (int i = 0; i < 50; ++i) {
@@ -1015,6 +1104,13 @@ void Boss::Draw() {
 	}
 	// 血しぶきのエフェクトの描画
 	particle.DrawParticles();
+	// リフトの描画
+	for (int index = 0; index < TILE_MAX; index++) {
+		if (Lifts[index].IsEnabled) {
+			// Lifts[index].ApplyParticles(particle);
+			Lifts[index].Draw();
+		}
+	}
 	// 床および固定のトゲの描画
 	for (int i = 0; i < W; ++i) {
 		for (int j = 0; j < H; ++j) {
