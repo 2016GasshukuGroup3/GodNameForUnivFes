@@ -369,6 +369,10 @@ STATE game() {
 			}
 		}
 		//Ballのセット
+		ballcount = 0;
+		bcount = 0;
+		drillcount = 0;
+		inviscount = 0;
 		//Bridgeのセット（落ちる方）
 		for (int i = 0; i < MapTilesHeight; ++i) {
 			for (int j = 0; j < MapTilesWidth; ++j) {
