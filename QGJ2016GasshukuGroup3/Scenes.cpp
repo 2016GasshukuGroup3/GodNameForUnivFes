@@ -75,6 +75,18 @@ struct Player {
 	bool OnCollideFromSide(int& tileid, int, int);
 	bool OnCollideFromBottom(int& tileid, int, int);
 	bool OnCollideFromTop(int& tileid, int, int);
+
+	bool OnCollideFromSide(Rect& tileid, int i, int j) {
+		return OnCollideFromSide(tileid.pattern, i, j);
+	}
+
+	bool OnCollideFromBottom(Rect& tileid, int i, int j) {
+		return OnCollideFromBottom(tileid.pattern, i, j);
+	}
+
+	bool OnCollideFromTop(Rect& tileid, int i, int j) {
+		return OnCollideFromTop(tileid.pattern, i, j);
+	}
 };
 
 Player player;
@@ -932,6 +944,7 @@ void Boss::Update() {
 	int DefX = player.x, DefY = player.y;
 	int DefDeltaX = player.dx, DefDeltaY = player.dy;
 	CollisionCheck(player, MapTiles, 32, -1);
+	// CollisionCheck(player, tile, [](Rect& rect) { return rect.pattern != 1; });
 	int NewX = player.x, NewY = player.y;
 	int TempCollideDirection = Direction::None;
 	TempCollideDirection = player.CollidedDirection;

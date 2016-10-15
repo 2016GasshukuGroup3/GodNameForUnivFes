@@ -385,6 +385,38 @@ void CollisionCheck(Type& obj, IMapTileLayor<MapType>& layor, TypeEmpty EmptyTil
 		::CollisionCheck(obj, layor, EmptyTile);
 }
 
+template <class Type, class MapType, class TypeEmpty>
+void CollisionCheck(Type& obj, std::vector<std::vector<MapType>>& layor, TypeEmpty EmptyTile) {
+	
+	class VectorAdapter : public IMapTileLayor<MapType> {
+		typedef std::vector<std::vector<MapType>> LayorType;
+		LayorType& Layor;
+	public:
+		VectorAdapter(LayorType& mylayor) :
+			Layor(mylayor) {
+		}
+
+		int Cols() override {
+			return Layor.size();
+		}
+
+		int Rows() override {
+			return Layor[0].size();
+		}
+
+		void SetTile(MapType&, int, int) override {
+			// do nothing.
+		}
+
+		MapType &GetTile(int x, int y) override {
+			return Layor[x][y];
+		}
+	} Adapter{layor};
+
+	CollisionCheckHelper<Type, MapType, CheckMember<Type>::HasXY && CheckMember<Type>::HasWidthHeight && CheckMember<Type>::HasDxDy>
+		::CollisionCheck(obj, Adapter, EmptyTile);
+}
+
 template <class Type, class MapType>
 /// <summary>
 /// 渡された IMapTileLayor オブジェクト中で、渡されたオブジェクトに対してあたり判定を行います。
