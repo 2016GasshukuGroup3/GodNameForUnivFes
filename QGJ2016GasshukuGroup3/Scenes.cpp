@@ -61,6 +61,8 @@ STATE title() {
 struct Player {
 	int x, y, width, height, dx, dy, fly, deathcount1, deathcount2;
 	int FloorDeltaX;
+	// Ç†ÇΩÇËîªíËÇÃèkè¨ó 
+	static const int CollisionOffset = 8;
 
 	// ï˚å¸Çï\ÇµÇ‹Ç∑ÅB
 	enum Direction {
@@ -100,7 +102,7 @@ bool Player::OnCollideFromSide(int& tileid, int i, int j) {
 
 	for (int id : { 5, 6, 7, 8 }) {
 		if (tileid == id) {
-			if (Shape::Rectangle_t(i * MapTile::MapSize + 1, j * MapTile::MapSize + 1, MapTile::MapSize - 2, MapTile::MapSize - 2).
+			if (Shape::Rectangle_t(i * MapTile::MapSize + Player::CollisionOffset, j * MapTile::MapSize + Player::CollisionOffset, MapTile::MapSize - Player::CollisionOffset * 2, MapTile::MapSize - Player::CollisionOffset * 2).
 				IntersectWith(Rectangle_t{ x, y, width, height })) {
 
 				// éÄñS
@@ -125,7 +127,7 @@ bool Player::OnCollideFromBottom(int& tileid, int i, int j) {
 
 	for (int id : { 5, 6, 7, 8 }) {
 		if (tileid == id) {
-			if (Shape::Rectangle_t(i * MapTile::MapSize + 1, j * MapTile::MapSize + 1, MapTile::MapSize - 2, MapTile::MapSize - 2).
+			if (Shape::Rectangle_t(i * MapTile::MapSize + Player::CollisionOffset, j * MapTile::MapSize + Player::CollisionOffset, MapTile::MapSize - Player::CollisionOffset * 2, MapTile::MapSize - Player::CollisionOffset * 2).
 				IntersectWith(Rectangle_t{ x, y, width, height })) {
 
 				// éÄñS
@@ -157,7 +159,7 @@ bool Player::OnCollideFromTop(int& tileid, int i, int j) {
 
 	for (int id : { 5, 6, 7, 8 }) {
 		if (tileid == id) {
-			if (Shape::Rectangle_t(i * MapTile::MapSize + 1, j * MapTile::MapSize + 1, MapTile::MapSize - 2, MapTile::MapSize - 2).
+			if (Shape::Rectangle_t(i * MapTile::MapSize + Player::CollisionOffset, j * MapTile::MapSize + Player::CollisionOffset, MapTile::MapSize - Player::CollisionOffset * 2, MapTile::MapSize - Player::CollisionOffset * 2).
 				IntersectWith(Rectangle_t{ x, y, width, height })) {
 
 				// éÄñS
@@ -218,7 +220,7 @@ void moveBall(Tile* ball) {
 		ball[i].y += ball[i].dy;
 	}
 	for (int i = 0; i < ballcount; ++i) {
-		if (Checkhitchery(ball[i].x, ball[i].y, ball[i].width, ball[i].height, player.x, player.y, player.width, player.height)) {
+		if (Checkhitchery(ball[i].x, ball[i].y, ball[i].width, ball[i].height, player.x + Player::CollisionOffset, player.y + Player::CollisionOffset, player.width - Player::CollisionOffset * 2, player.height - Player::CollisionOffset)) {
 			player.deathcount2++;
 		}
 	}
@@ -261,7 +263,7 @@ void drillAttack(Tile* drill) {
 		drill[i].y += drill[i].dy;
 	}
 	for (int i = 0; i < drillcount; ++i) {
-		if (Checkhitchery(drill[i].x, drill[i].y, drill[i].width, drill[i].height, player.x, player.y, player.width, player.height)) {
+		if (Checkhitchery(drill[i].x, drill[i].y, drill[i].width, drill[i].height, player.x + Player::CollisionOffset, player.y + Player::CollisionOffset, player.width - Player::CollisionOffset * 2, player.height - Player::CollisionOffset)) {
 			player.deathcount2++;
 		}
 	}
@@ -740,7 +742,7 @@ void drillAttack2(Tile* drill) {
 		drill[i].y += drill[i].dy;
 	}
 	for (int i = 0; i < drillcount; ++i) {
-		if (Checkhitchery(drill[i].x, drill[i].y, drill[i].width, drill[i].height, player.x, player.y, player.width, player.height)) {
+		if (Checkhitchery(drill[i].x, drill[i].y, drill[i].width, drill[i].height, player.x + Player::CollisionOffset, player.y + Player::CollisionOffset, player.width - Player::CollisionOffset * 2, player.height - Player::CollisionOffset)) {
 			player.deathcount2++;
 		}
 	}
