@@ -61,6 +61,8 @@ STATE title() {
 struct Player {
 	int x, y, width, height, dx, dy, fly, deathcount1, deathcount2;
 	int FloorDeltaX;
+	int InvulnerableTime;
+
 	// あたり判定の縮小量
 	static const int CollisionOffset = 8;
 
@@ -601,8 +603,8 @@ STATE game() {
 		}
 		//落ちてくる球
 		for (int i = 0; i < ballcount; ++i) {
-		//	if (ball[i].flag)
-				DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
+			//	if (ball[i].flag)
+			DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
 		}
 
 		//落ちる橋
@@ -655,7 +657,7 @@ STATE game() {
 		DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
 
 		if (player.x >= 608) {
-			if (stagenum >= 1) {
+			if (stagenum >= 5) {
 				gameflag = false;
 				if (CheckSoundMem(Sound2) == 1) {
 					StopSoundMem(Sound2);
@@ -741,11 +743,15 @@ void drillAttack2(Tile* drill) {
 		drill[i].x += drill[i].dx;
 		drill[i].y += drill[i].dy;
 	}
-	for (int i = 0; i < drillcount; ++i) {
-		if (Checkhitchery(drill[i].x, drill[i].y, drill[i].width, drill[i].height, player.x + Player::CollisionOffset, player.y + Player::CollisionOffset, player.width - Player::CollisionOffset * 2, player.height - Player::CollisionOffset)) {
-			player.deathcount2++;
+
+	if (player.InvulnerableTime < 0) {
+		for (int i = 0; i < drillcount; ++i) {
+			if (Checkhitchery(drill[i].x, drill[i].y, drill[i].width, drill[i].height, player.x + Player::CollisionOffset, player.y + Player::CollisionOffset, player.width - Player::CollisionOffset * 2, player.height - Player::CollisionOffset)) {
+				player.deathcount2++;
+			}
 		}
 	}
+
 }
 void Boss::Init() {
 	body = LoadGraph("Graphic/God.png");
@@ -860,12 +866,12 @@ void UpdateLift() {
 	// リフトの更新
 	for (int i = 0; i < TILE_MAX; i++) {
 		//if (Lifts[i].IsEnabled) {
-			Lifts[i].Update();
+		Lifts[i].Update();
 
-			if (Lifts[i].Y > MapTile::MapSize * 15) {
-				Lifts[i].IsEnabled = false;
-				Lifts[i].MyPattern = Lift::DoNotMove;
-			}
+		if (Lifts[i].Y > MapTile::MapSize * 15) {
+			Lifts[i].IsEnabled = false;
+			Lifts[i].MyPattern = Lift::DoNotMove;
+		}
 		//}
 	}
 }
@@ -910,6 +916,11 @@ void Boss::Update() {
 	}
 	// 動くとげの更新
 	drillAttack2(drill);
+
+	if (player.InvulnerableTime >= 0) {
+		--player.InvulnerableTime;
+	}
+
 	// 入力に応じて、プレイヤーのスピードを変える
 	if (CheckHitKey(KEY_INPUT_LEFT)) {
 		player.FaceDirection = Player::Direction::Direction_Left;
@@ -1010,6 +1021,7 @@ void Boss::Update() {
 		maxhp = hp = 6;
 		player.x = 60, player.y = 100;
 		time = 0;
+		player.InvulnerableTime = 60;
 		return;
 	}
 	// 血しぶきのエフェクトの更新
@@ -1107,12 +1119,15 @@ void Boss::Draw() {
 	// 死亡回数の表示
 	DrawFormatString(500, 40, blue, "%d", player.deathcount2);
 	// プレイヤーの描画
-	if (player.FaceDirection == Player::Direction::Direction_Left) {
-		DrawTurnGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
+	if ((player.InvulnerableTime / 3) % 2 == 0) {
+		if (player.FaceDirection == Player::Direction::Direction_Left) {
+			DrawTurnGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
+		}
+		else {
+			DrawGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
+		}
 	}
-	else {
-		DrawGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
-	}
+
 	// トゲの描画
 	for (int i = 0; i < drillcount; ++i) {
 		DrawGraph(drill[i].x, drill[i].y, toge[drill[i].dir], TRUE);
@@ -1179,14 +1194,14 @@ STATE boss() {
 		enemy.Draw();
 		// ゲームオーバーになっていた時
 		if (enemy.IsOver()) {
-			if (CheckSoundMem(enemy.bgm) == 0) {
+			if (CheckSoundMem(enemy.bgm) == TRUE) {
 				StopSoundMem(enemy.bgm);
 			}
 			return GAMEOVER;
 		}
 		// ゲームクリアした時
 		if (enemy.IsEnd()) {
-			if (CheckSoundMem(enemy.bgm) == 0) {
+			if (CheckSoundMem(enemy.bgm) == TRUE) {
 				StopSoundMem(enemy.bgm);
 			}
 			return RESULT;
@@ -1217,6 +1232,7 @@ STATE result() {
 		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 			player.deathcount1 = 0;
 			titleflag = false;
+			bossflag = false;
 			gameflag = false;
 			resultflag = false;
 			return TITLE;
