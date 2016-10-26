@@ -424,7 +424,12 @@ STATE game() {
 		LiftCount = 0;
 
 		// player ‚ğ‰Šú‰»
-		mv = MapViewer(1);
+		// mv = MapViewer(1);
+		if (CurrentSelection == GameMode_Easy) {
+			mv = MapViewer("Data/Map/SaveData", 1);
+		} else {
+			mv = MapViewer("Data/HardMap/SaveData", 1);
+		}
 		Initialization(stagenum, mv);
 
 		mv.SetTileKind(tmp);
