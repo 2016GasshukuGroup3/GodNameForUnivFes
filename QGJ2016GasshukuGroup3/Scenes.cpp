@@ -17,9 +17,10 @@ int KetteiSound;
 bool titleflag = false;
 int titleHandle;
 int FontHandle;
+
 STATE title() {
 	if (!titleflag) {
-		titleHandle = LoadGraph("Graphic/タイトル画面.png");
+		titleHandle = LoadGraph("Graphic/タイトル画面改良版.png");
 
 		//音楽のための変数と読み込み
 		Sound1 = LoadSoundMem("音楽/合宿QGJ_タイトル.ogg");
