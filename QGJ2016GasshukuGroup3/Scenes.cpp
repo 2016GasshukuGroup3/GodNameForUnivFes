@@ -16,11 +16,22 @@ int KetteiSound;
 
 bool titleflag = false;
 int titleHandle;
+int GameMode_EasyImage, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
 int FontHandle;
+// 現在のEasyMode/HardMode選択状況
+enum GameMode {
+	// ゲーム難易度は選択されていません。つまり、タイトル画面のボタンを押してねの状態を表します。
+	GameMode_None,
+	// ゲーム難易度として、Easy が選ばれています。
+	GameMode_Easy,
+	// ゲーム難易度として、Hard が選ばれています。
+	GameMode_Hard
+} CurrentSelection;
 
 STATE title() {
 	if (!titleflag) {
 		titleHandle = LoadGraph("Graphic/タイトル画面改良版.png");
+		CurrentSelection = GameMode_None;
 
 		//音楽のための変数と読み込み
 		Sound1 = LoadSoundMem("音楽/合宿QGJ_タイトル.ogg");
@@ -31,6 +42,11 @@ STATE title() {
 		//ChangeVolumeSoundMem(216, Sound3);
 		KetteiSound = LoadSoundMem("音楽/合宿QGJ_SE_決定音.ogg");
 
+		GameMode_EasyImage = LoadGraph("Graphic/イージーモード.png");
+		GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
+		GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
+		GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
+
 		PlaySoundMem(Sound1, DX_PLAYTYPE_LOOP);
 
 		// 作成したデータの識別番号を変数 FontHandle に保存する
@@ -38,13 +54,32 @@ STATE title() {
 		titleflag = true;
 	}
 	else {
-		// キーの入力待ち
-		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
-			// 作成したフォントデータを削除する
-			DeleteFontToHandle(FontHandle);
-			StopSoundMem(Sound1);
-			PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
-			return SETSUMEI;
+		if (CurrentSelection == GameMode_None) {
+			// キーの入力待ち
+			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+				CurrentSelection = GameMode_Easy;
+			}
+		} else {
+			// キーの入力待ち
+			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+				// 作成したフォントデータを削除する
+				DeleteFontToHandle(FontHandle);
+				StopSoundMem(Sound1);
+				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
+				return SETSUMEI;
+			}
+
+			if (getKeyPress(KEY_INPUT_UP, PRESS_ONCE) || getKeyPress(KEY_INPUT_DOWN, PRESS_ONCE)) {
+				if (CurrentSelection == GameMode_Easy) {
+					CurrentSelection = GameMode_Hard;
+				} else {
+					CurrentSelection = GameMode_Easy;
+				}
+			}
+
+			if (getKeyPress(KEY_INPUT_ESCAPE, PRESS_ONCE)) {
+				CurrentSelection = GameMode_None;
+			}
 		}
 
 		//タイトル描画
@@ -52,8 +87,20 @@ STATE title() {
 
 		// 読みこんだグラフィックを画面左上に描画
 		DrawGraph(0, 0, titleHandle, TRUE);
-		DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
-		//ScreenFlip();//描画の反映
+
+
+		if (CurrentSelection != GameMode_None) {
+			if (CurrentSelection == GameMode_Easy) {
+				DrawGraph(300, 260, GameMode_EasySelectedImage, TRUE);
+				DrawGraph(300, 340, GameMode_HardImage, TRUE);
+			} else {
+				DrawGraph(300, 260, GameMode_EasyImage, TRUE);
+				DrawGraph(300, 340, GameMode_HardSelectedImage, TRUE);
+			}
+		} else {
+			DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
+			//ScreenFlip();//描画の反映
+		}
 	}
 
 	return TITLE;
