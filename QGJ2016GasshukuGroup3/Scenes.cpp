@@ -59,7 +59,7 @@ STATE title() {
 }
 
 struct Player {
-	int x, y, width, height, dx, dy, fly, deathcount1, deathcount2;
+	int x, y, width, height, dx, dy, fly, deathcount1, deathcount2,deathcount3;
 	int FloorDeltaX;
 	int InvulnerableTime;
 
@@ -456,7 +456,7 @@ STATE game() {
 			player.dx = player.FloorDeltaX;
 		}
 
-		if ((CheckHitKey(KEY_INPUT_SPACE) || CheckHitKey(KEY_INPUT_UP)) && player.fly == 0) { // && player.dy == 0) {
+		if ((getKeyPress(KEY_INPUT_SPACE,PRESS_ONCE) || CheckHitKey(KEY_INPUT_UP)) && player.fly == 0) { // && player.dy == 0) {
 			PlaySoundMem(JumpSound, DX_PLAYTYPE_BACK);
 			player.dy = -20;
 			player.fly = 1;
@@ -532,7 +532,8 @@ STATE game() {
 
 		player.x = NewX;
 		player.y = NewY;
-
+		//ボス戦gameoverのための設定
+		player.deathcount3 = player.deathcount2 + 10;
 		// 挟まり判定
 		if ((TempCollideDirection & Direction::LeftAndRight) == Direction::LeftAndRight || (TempCollideDirection & Direction::UpAndDown) == Direction::UpAndDown) {
 			player.deathcount2++;
@@ -937,7 +938,7 @@ void Boss::Update() {
 		player.dx = player.FloorDeltaX;
 	}
 	// ジャンプの処理
-	if (CheckHitKey(KEY_INPUT_SPACE) && player.fly == 0) {
+	if (getKeyPress(KEY_INPUT_SPACE,PRESS_ONCE) && player.fly == 0) {
 		player.dy = -20;
 		player.fly = 1;
 	}
@@ -1154,6 +1155,9 @@ void Boss::Draw() {
 // ゲームオーバーかどうか
 bool Boss::IsOver() {
 	// ゲームオーバーの条件をここに追加
+	//player.deathcount3 = player.deathcount2 + 10;
+	return player.deathcount2 >= player.deathcount3;
+
 	return gameover;
 	// この書き方は次の書き方と同じ
 	// if (gameover) {
