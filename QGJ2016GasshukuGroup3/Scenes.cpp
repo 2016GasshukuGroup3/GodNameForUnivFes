@@ -17,6 +17,8 @@ int KetteiSound;
 bool titleflag = false;
 int titleHandle;
 int GameMode_EasyImage, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
+int PressStartImage;
+
 int FontHandle;
 // 現在のEasyMode/HardMode選択状況
 enum GameMode {
@@ -46,6 +48,8 @@ STATE title() {
 		GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
 		GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
 		GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
+
+		PressStartImage = LoadGraph("Graphic/PRESS_START.png");
 
 		PlaySoundMem(Sound1, DX_PLAYTYPE_LOOP);
 
@@ -98,7 +102,8 @@ STATE title() {
 				DrawGraph(300, 340, GameMode_HardSelectedImage, TRUE);
 			}
 		} else {
-			DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
+			DrawGraph(200, 400, PressStartImage, TRUE);
+			// DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
 			//ScreenFlip();//描画の反映
 		}
 	}
@@ -340,6 +345,7 @@ void moveBridge(Tile *b) {
 
 bool gameflag = false;
 int BackImageHandle, jimen, toge[4], hasi, ballHandle;
+int NumberImages[10], StageImage, TimeImage, MinImage, SecImage, DeathCountImage;
 int JumpSound, KilledSound;
 int timer;
 int PlayerImageHandles[3];
@@ -369,6 +375,24 @@ void Initialization(int map, MapViewer &mv) {
 }
 
 
+void DrawNumber(int x, int y, int Number) {
+	int TempNum = Number;
+	int Counter = 0;
+	bool Appeared = false;
+
+	for (int i = 10000000; i >= 1; i /= 10) {
+		int RankNum = TempNum / i;
+
+		if (!(RankNum == 0 && !Appeared) || i == 1) {
+			Appeared = true;
+			DrawGraph(x + 20 * Counter, y, NumberImages[RankNum], TRUE);
+		}
+
+		Counter++;
+		TempNum -= i * RankNum;
+	}
+}
+
 STATE game() {
 	if (!gameflag) {
 		// タイルマップとして使う２次元配列
@@ -395,6 +419,13 @@ STATE game() {
 		BackImageHandle = LoadGraph("Graphic/背景.jpg");
 		// プレイヤーの画像の読み込み
 		LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
+
+		LoadDivGraph("Graphic/num.png", 10, 10, 1, 16, 32, NumberImages);
+		StageImage = LoadGraph("Graphic/STAGE.png");
+		TimeImage = LoadGraph("Graphic/TIME.png");
+		MinImage = LoadGraph("Graphic/MIN.png");
+		SecImage = LoadGraph("Graphic/SEC.png");
+		DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
 
 		jimen = LoadGraph("Graphic/Jimen.png");
 		hasi = LoadGraph("Graphic/Hasi.png");
@@ -705,9 +736,13 @@ STATE game() {
 		Cr = GetColor(0, 0, 0);
 
 		//死亡回数、ステージ、残り時間の表示
-		DrawFormatString(500, 0, Cr, "Death Count %d", player.deathcount1);
-		DrawFormatString(500, 20, Cr, "Stage %d", stagenum);
-		DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+		// DrawFormatString(500, 0, Cr, "Death Count %d", player.deathcount1);
+		DrawNumber(400, 0, player.deathcount1);
+		// DrawFormatString(500, 20, Cr, "Stage %d", stagenum);
+		DrawNumber(400, 20, stagenum);
+		// DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+		DrawNumber(400, 40, (180 - timer / 60) / 60);
+		DrawNumber(440, 40, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
 
 		if (player.x >= 608) {
 			if (stagenum >= 5) {
