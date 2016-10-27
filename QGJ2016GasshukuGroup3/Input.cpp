@@ -1,15 +1,32 @@
 #include "Input.h"
+#include <unordered_map>
 static int Key[256];
 static bool KeyFlag[256];
 static int Mouse[7];
 static int Pad[4][32];
+static std::unordered_map<int, int> RedirectList
+{ 
+	{ 
+		{ KEY_INPUT_DOWN, 0 /* PAD_INPUT_DOWN */ },
+		{ KEY_INPUT_LEFT, 1 /* PAD_INPUT_LEFT */ }, 
+		{ KEY_INPUT_RIGHT, 2 /* PAD_INPUT_RIGHT */ }, 
+		{ KEY_INPUT_UP, 3 /* PAD_INPUT_UP */ },
+		{ KEY_INPUT_SPACE, 4 /* PAD_INPUT_1 */ }
+	} 
+};
 
 //キーボード
 int gpUpdateKey(){
 	char tmpKey[256];
 	GetHitKeyStateAll(tmpKey);
 	for (int i = 0; i<256; i++){
-		if (tmpKey[i] != 0){
+		int RedirectedInput = 0;
+
+		if (RedirectList.find(i) != RedirectList.end()) {
+			RedirectedInput = Pad[0][RedirectList[i]];
+		}
+
+		if (tmpKey[i] != 0 || RedirectedInput != 0){
 			Key[i]++;
 			if (Key[i] == 1){
 				KeyFlag[i] = !KeyFlag[i];
