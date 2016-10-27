@@ -18,7 +18,7 @@ static enum InternalState {
 } InternalCurrentState;
 
 InternalState StoryScene() {
-	if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE) || (GetJoypadInputState(DX_INPUT_PAD1) & PAD_INPUT_1) != 0) {
+	if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 		++Phase;
 
 		if (Phase >= 10) {

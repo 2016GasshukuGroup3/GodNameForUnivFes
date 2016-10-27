@@ -520,7 +520,7 @@ STATE game() {
 	}
 	else {
 		// 強制終了コマンド
-		if (CheckHitKey(KEY_INPUT_ESCAPE)) {
+		if (getResetRequestStatus()) {
 			StopSoundMem(Sound2);
 			PlaySoundMem(Sound1, DX_PLAYTYPE_LOOP);
 			gameflag = false;
@@ -538,12 +538,12 @@ STATE game() {
 		}
 
 		// 入力に応じて、プレイヤーのスピードを変える
-		if (CheckHitKey(KEY_INPUT_LEFT)) {
+		if (getKeyPress(KEY_INPUT_LEFT, PRESS)) {
 			player.FaceDirection = Player::Direction::Direction_Left;
 			player.AnimationFlame++;
 			player.dx = -2 + player.FloorDeltaX;
 		}
-		else if (CheckHitKey(KEY_INPUT_RIGHT)) {
+		else if (getKeyPress(KEY_INPUT_RIGHT, PRESS)) {
 			player.FaceDirection = Player::Direction::Direction_Right;
 			player.AnimationFlame++;
 			player.dx = 2 + player.FloorDeltaX;
@@ -1027,12 +1027,12 @@ void Boss::Update() {
 	}
 
 	// 入力に応じて、プレイヤーのスピードを変える
-	if (CheckHitKey(KEY_INPUT_LEFT)) {
+	if (getKeyPress(KEY_INPUT_LEFT, PRESS)) {
 		player.FaceDirection = Player::Direction::Direction_Left;
 		player.AnimationFlame++;
 		player.dx = -2 + player.FloorDeltaX;
 	}
-	else if (CheckHitKey(KEY_INPUT_RIGHT)) {
+	else if (getKeyPress(KEY_INPUT_RIGHT, PRESS)) {
 		player.FaceDirection = Player::Direction::Direction_Right;
 		player.AnimationFlame++;
 		player.dx = 2 + player.FloorDeltaX;
@@ -1310,6 +1310,12 @@ STATE boss() {
 				StopSoundMem(enemy.bgm);
 			}
 			return RESULT;
+		}
+		if (getResetRequestStatus()) {
+			if (CheckSoundMem(enemy.bgm) == TRUE) {
+				StopSoundMem(enemy.bgm);
+			}
+			return TITLE;
 		}
 	}
 	return BOSS;
