@@ -15,6 +15,15 @@ static std::unordered_map<int, int> RedirectList
 	} 
 };
 
+bool getResetRequestStatus() {
+	const int ExitJoyPadMask = PAD_INPUT_DOWN | PAD_INPUT_3 | PAD_INPUT_5 | PAD_INPUT_6 | PAD_INPUT_7 | PAD_INPUT_8;
+
+	bool KeyRequest = (Key[KEY_INPUT_E] > 0 && Key[KEY_INPUT_S] > 0 && Key[KEY_INPUT_C] > 0);
+	bool PadRequest = (GetJoypadInputState(DX_INPUT_PAD1) & ExitJoyPadMask) == ExitJoyPadMask;
+
+	return (KeyRequest | PadRequest);
+}
+
 //キーボード
 int gpUpdateKey(){
 	char tmpKey[256];

@@ -14,6 +14,8 @@ const int KEY_INPUT_CONTROL[2] = { KEY_INPUT_LCONTROL, KEY_INPUT_RCONTROL };
 const int KEY_INPUT_SHIFT[2] = { KEY_INPUT_LSHIFT, KEY_INPUT_RSHIFT };
 const int KEY_INPUT_ALT[2] = { KEY_INPUT_LALT, KEY_INPUT_RALT };
 
+bool getResetRequestStatus();
+
 //キーボード
 int gpUpdateKey();
 int getKey(const int KeyCode);
