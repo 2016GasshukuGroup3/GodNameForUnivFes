@@ -21,7 +21,7 @@ InternalState StoryScene() {
 		++Phase;
 
 		if (Phase >= 10) {
-			Phase = 0;
+			Phase = 1;
 			return InternalState::SetsumeiPhase;
 		}
 	}
@@ -66,7 +66,7 @@ STATE setsumei() {
 
 		if (SetsumeiImage[0] == -1) {
 			SetsumeiImage[0] = LoadGraph("Graphic/ストーリー.png");
-			SetsumeiImage[1] = LoadGraph("Graphic/操作説明.png");
+			SetsumeiImage[1] = LoadGraph("Graphic/操作説明改良版.png");
 
 			for (int i = 0; i < _countof(StoryImages); i++) {
 				StoryImages[i] = LoadGraph((std::string("Graphic/あらすじ") + std::to_string(i + 1) + ".png").c_str());

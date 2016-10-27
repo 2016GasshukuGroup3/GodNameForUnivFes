@@ -41,9 +41,14 @@ Pos MapFragment::GetPos(){
 MapViewer::MapViewer(){};
 MapViewer::MapViewer(int n){
 	const string PATH = "Data/Map/SaveData";
-	filePath = PATH + itos(n) + ".csv";
+	filePath = PATH; // +itos(n) + ".csv";
 	SetData(n);
 };
+
+MapViewer::MapViewer(string FileName, int n) {
+	filePath = FileName; // +itos(n) + ".csv";
+	SetData(n);
+}
 
 void MapViewer::Update(){
 	atbflag = false;
@@ -79,8 +84,8 @@ void MapViewer::SetData(int number){
 	stringstream ss;
 	ifstream ifs;
 	const string PATH = "Data/Map/SaveData";
-	filePath = PATH + itos(number) + ".csv";
-	ifs.open(filePath);
+	// filePath = PATH + itos(number) + ".csv";
+	ifs.open(filePath + itos(number) + ".csv");
 	fail = ifs.fail();
 	getline(ifs.seekg(0, ios_base::cur), str, ',');
 	ds.resize(2);

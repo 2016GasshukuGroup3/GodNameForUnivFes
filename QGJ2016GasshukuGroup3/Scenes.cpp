@@ -16,10 +16,24 @@ int KetteiSound;
 
 bool titleflag = false;
 int titleHandle;
+int GameMode_EasyImage, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
+int PressStartImage;
+
 int FontHandle;
+// 現在のEasyMode/HardMode選択状況
+enum GameMode {
+	// ゲーム難易度は選択されていません。つまり、タイトル画面のボタンを押してねの状態を表します。
+	GameMode_None,
+	// ゲーム難易度として、Easy が選ばれています。
+	GameMode_Easy,
+	// ゲーム難易度として、Hard が選ばれています。
+	GameMode_Hard
+} CurrentSelection;
+
 STATE title() {
 	if (!titleflag) {
-		titleHandle = LoadGraph("Graphic/タイトル画面.png");
+		titleHandle = LoadGraph("Graphic/タイトル画面改良版.png");
+		CurrentSelection = GameMode_None;
 
 		//音楽のための変数と読み込み
 		Sound1 = LoadSoundMem("音楽/合宿QGJ_タイトル.ogg");
@@ -30,6 +44,13 @@ STATE title() {
 		//ChangeVolumeSoundMem(216, Sound3);
 		KetteiSound = LoadSoundMem("音楽/合宿QGJ_SE_決定音.ogg");
 
+		GameMode_EasyImage = LoadGraph("Graphic/イージーモード.png");
+		GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
+		GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
+		GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
+
+		PressStartImage = LoadGraph("Graphic/PRESS_START.png");
+
 		PlaySoundMem(Sound1, DX_PLAYTYPE_LOOP);
 
 		// 作成したデータの識別番号を変数 FontHandle に保存する
@@ -37,13 +58,32 @@ STATE title() {
 		titleflag = true;
 	}
 	else {
-		// キーの入力待ち
-		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
-			// 作成したフォントデータを削除する
-			DeleteFontToHandle(FontHandle);
-			StopSoundMem(Sound1);
-			PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
-			return SETSUMEI;
+		if (CurrentSelection == GameMode_None) {
+			// キーの入力待ち
+			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+				CurrentSelection = GameMode_Easy;
+			}
+		} else {
+			// キーの入力待ち
+			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+				// 作成したフォントデータを削除する
+				DeleteFontToHandle(FontHandle);
+				StopSoundMem(Sound1);
+				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
+				return SETSUMEI;
+			}
+
+			if (getKeyPress(KEY_INPUT_UP, PRESS_ONCE) || getKeyPress(KEY_INPUT_DOWN, PRESS_ONCE)) {
+				if (CurrentSelection == GameMode_Easy) {
+					CurrentSelection = GameMode_Hard;
+				} else {
+					CurrentSelection = GameMode_Easy;
+				}
+			}
+
+			if (getKeyPress(KEY_INPUT_ESCAPE, PRESS_ONCE)) {
+				CurrentSelection = GameMode_None;
+			}
 		}
 
 		//タイトル描画
@@ -51,8 +91,21 @@ STATE title() {
 
 		// 読みこんだグラフィックを画面左上に描画
 		DrawGraph(0, 0, titleHandle, TRUE);
-		DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
-		//ScreenFlip();//描画の反映
+
+
+		if (CurrentSelection != GameMode_None) {
+			if (CurrentSelection == GameMode_Easy) {
+				DrawGraph(300, 260, GameMode_EasySelectedImage, TRUE);
+				DrawGraph(300, 340, GameMode_HardImage, TRUE);
+			} else {
+				DrawGraph(300, 260, GameMode_EasyImage, TRUE);
+				DrawGraph(300, 340, GameMode_HardSelectedImage, TRUE);
+			}
+		} else {
+			DrawGraph(200, 400, PressStartImage, TRUE);
+			// DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
+			//ScreenFlip();//描画の反映
+		}
 	}
 
 	return TITLE;
@@ -292,6 +345,7 @@ void moveBridge(Tile *b) {
 
 bool gameflag = false;
 int BackImageHandle, jimen, toge[4], hasi, ballHandle;
+int NumberImages[10], StageImage, TimeImage, MinImage, SecImage, DeathCountImage;
 int JumpSound, KilledSound;
 int timer;
 int PlayerImageHandles[3];
@@ -321,6 +375,24 @@ void Initialization(int map, MapViewer &mv) {
 }
 
 
+void DrawNumber(int x, int y, int Number) {
+	int TempNum = Number;
+	int Counter = 0;
+	bool Appeared = false;
+
+	for (int i = 10000000; i >= 1; i /= 10) {
+		int RankNum = TempNum / i;
+
+		if (!(RankNum == 0 && !Appeared) || i == 1) {
+			Appeared = true;
+			DrawGraph(x + 20 * Counter, y, NumberImages[RankNum], TRUE);
+		}
+
+		Counter++;
+		TempNum -= i * RankNum;
+	}
+}
+
 STATE game() {
 	if (!gameflag) {
 		// タイルマップとして使う２次元配列
@@ -347,6 +419,13 @@ STATE game() {
 		BackImageHandle = LoadGraph("Graphic/背景.jpg");
 		// プレイヤーの画像の読み込み
 		LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
+
+		LoadDivGraph("Graphic/num.png", 10, 10, 1, 16, 32, NumberImages);
+		StageImage = LoadGraph("Graphic/STAGE.png");
+		TimeImage = LoadGraph("Graphic/TIME.png");
+		MinImage = LoadGraph("Graphic/MIN.png");
+		SecImage = LoadGraph("Graphic/SEC.png");
+		DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
 
 		jimen = LoadGraph("Graphic/Jimen.png");
 		hasi = LoadGraph("Graphic/Hasi.png");
@@ -376,7 +455,12 @@ STATE game() {
 		LiftCount = 0;
 
 		// player を初期化
-		mv = MapViewer(1);
+		// mv = MapViewer(1);
+		if (CurrentSelection == GameMode_Easy) {
+			mv = MapViewer("Data/Map/SaveData", 1);
+		} else {
+			mv = MapViewer("Data/HardMap/SaveData", 1);
+		}
 		Initialization(stagenum, mv);
 
 		mv.SetTileKind(tmp);
@@ -652,9 +736,17 @@ STATE game() {
 		Cr = GetColor(0, 0, 0);
 
 		//死亡回数、ステージ、残り時間の表示
-		DrawFormatString(500, 0, Cr, "Death Count %d", player.deathcount1);
-		DrawFormatString(500, 20, Cr, "Stage %d", stagenum);
-		DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+		// DrawFormatString(500, 0, Cr, "Death Count %d", player.deathcount1);
+		DrawGraph(360, 0, DeathCountImage, TRUE);
+		DrawNumber(470, 0, player.deathcount1);
+		// DrawFormatString(500, 20, Cr, "Stage %d", stagenum);
+		DrawGraph(365, 30, StageImage, TRUE);
+		DrawNumber(470, 30, stagenum);
+		// DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+		DrawGraph(450, 60, MinImage, TRUE);
+		DrawNumber(280, 60, (180 - timer / 60) / 60);
+		DrawGraph(570, 60, SecImage, TRUE);
+		DrawNumber(410, 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
 
 		if (player.x >= 608) {
 			if (stagenum >= 5) {
