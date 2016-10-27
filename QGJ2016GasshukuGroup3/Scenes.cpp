@@ -356,7 +356,7 @@ void moveBridge(Tile *b) {
 }
 
 bool gameflag = false;
-int BackImageHandle, jimen, toge[4], hasi, ballHandle;
+int BackImageHandle = -1, jimen, toge[4], hasi, ballHandle;
 int NumberImages[10], StageImage, TimeImage, MinImage, SecImage, DeathCountImage;
 int JumpSound, KilledSound;
 int timer;
@@ -426,27 +426,28 @@ STATE game() {
 		//ƒXƒe[ƒW‚Ì‰Šú‰»
 		stagenum = 1;
 
+		if (BackImageHandle == -1) {
+			// ”wŒi‚Ì“Ç‚İ‚İ
+			BackImageHandle = LoadGraph("Graphic/”wŒi.jpg");
+			// ƒvƒŒƒCƒ„[‚Ì‰æ‘œ‚Ì“Ç‚İ‚İ
+			LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
 
-		// ”wŒi‚Ì“Ç‚İ‚İ
-		BackImageHandle = LoadGraph("Graphic/”wŒi.jpg");
-		// ƒvƒŒƒCƒ„[‚Ì‰æ‘œ‚Ì“Ç‚İ‚İ
-		LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
+			LoadDivGraph("Graphic/num.png", 10, 10, 1, 16, 32, NumberImages);
+			StageImage = LoadGraph("Graphic/STAGE.png");
+			TimeImage = LoadGraph("Graphic/TIME.png");
+			MinImage = LoadGraph("Graphic/MIN.png");
+			SecImage = LoadGraph("Graphic/SEC.png");
+			DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
 
-		LoadDivGraph("Graphic/num.png", 10, 10, 1, 16, 32, NumberImages);
-		StageImage = LoadGraph("Graphic/STAGE.png");
-		TimeImage = LoadGraph("Graphic/TIME.png");
-		MinImage = LoadGraph("Graphic/MIN.png");
-		SecImage = LoadGraph("Graphic/SEC.png");
-		DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
-
-		jimen = LoadGraph("Graphic/Jimen.png");
-		hasi = LoadGraph("Graphic/Hasi.png");
-		for (int i = 0; i < 4; ++i) {
-			toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
+			jimen = LoadGraph("Graphic/Jimen.png");
+			hasi = LoadGraph("Graphic/Hasi.png");
+			for (int i = 0; i < 4; ++i) {
+				toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
+			}
+			ballHandle = LoadGraph("Graphic/ball.png");
+			JumpSound = LoadSoundMem("‰¹Šy/‡hQGJ_SE_ƒWƒƒƒ“ƒv.ogg");
+			KilledSound = LoadSoundMem("‰¹Šy/‡hQGJ_SE_€–S.ogg");
 		}
-		ballHandle = LoadGraph("Graphic/ball.png");
-		JumpSound = LoadSoundMem("‰¹Šy/‡hQGJ_SE_ƒWƒƒƒ“ƒv.ogg");
-		KilledSound = LoadSoundMem("‰¹Šy/‡hQGJ_SE_€–S.ogg");
 
 		for (auto& item : Lifts) {
 			item.Reset();
@@ -699,8 +700,8 @@ STATE game() {
 		}
 		//—‚¿‚Ä‚­‚é‹…
 		for (int i = 0; i < ballcount; ++i) {
-			//	if (ball[i].flag)
-			DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
+			if (ball[i].flag)
+				DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
 		}
 
 		//—‚¿‚é‹´
