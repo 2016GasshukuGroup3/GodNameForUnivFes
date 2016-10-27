@@ -737,12 +737,16 @@ STATE game() {
 
 		//死亡回数、ステージ、残り時間の表示
 		// DrawFormatString(500, 0, Cr, "Death Count %d", player.deathcount1);
-		DrawNumber(400, 0, player.deathcount1);
+		DrawGraph(360, 0, DeathCountImage, TRUE);
+		DrawNumber(470, 0, player.deathcount1);
 		// DrawFormatString(500, 20, Cr, "Stage %d", stagenum);
-		DrawNumber(400, 20, stagenum);
+		DrawGraph(365, 30, StageImage, TRUE);
+		DrawNumber(470, 30, stagenum);
 		// DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
-		DrawNumber(400, 40, (180 - timer / 60) / 60);
-		DrawNumber(440, 40, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+		DrawGraph(450, 60, MinImage, TRUE);
+		DrawNumber(280, 60, (180 - timer / 60) / 60);
+		DrawGraph(570, 60, SecImage, TRUE);
+		DrawNumber(410, 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
 
 		if (player.x >= 608) {
 			if (stagenum >= 5) {
