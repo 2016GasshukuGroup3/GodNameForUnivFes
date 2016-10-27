@@ -24,6 +24,7 @@ bool AddHandle(const char Key[], int Handle, bool AlwaysRegisterValue = false);
 /// </param>
 /// <param name="GraphicHandle">新しく読み込む画像ファイルのパス</param>
 /// <returns>登録に成功すれば true, そうでなければ false</returns>
+/// <remarks>すでに登録名が使われていた場合は何もしません</remarks>
 bool AddGraphicHandle(const char Key[], const char FileName[]);
 
 /// <summary>新しく音声を読み込み、アセットマネージャにそのハンドルを登録します。</summary>
@@ -32,6 +33,7 @@ bool AddGraphicHandle(const char Key[], const char FileName[]);
 /// </param>
 /// <param name="GraphicHandle">新しく読み込む音声ファイルのパス</param>
 /// <returns>登録に成功すれば true, そうでなければ false</returns>
+/// <summary>新しく音声を読み込み、アセットマネージャにそのハンドルを登録します。</summary>
 bool AddMusicHandle(const char Key[], const char FileName[]);
 
 /// <summary>アセットマネージャから指定した登録名に関連付けられている画像や音声のハンドルの登録を解除します。</summary>

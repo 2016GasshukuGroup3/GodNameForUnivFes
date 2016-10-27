@@ -1,5 +1,6 @@
 #include "Scenes.h"
 #include "Input.h"
+#include "Asset.h"
 #include <string>
 
 static int SetsumeiImage[2] = { -1 };
@@ -64,6 +65,7 @@ STATE setsumei() {
 		Flames = 0;
 		InternalCurrentState = InternalState::StoryPhase;
 
+		// 画像などがまだ読み込まれていない時に一度だけ初期化
 		if (SetsumeiImage[0] == -1) {
 			SetsumeiImage[0] = LoadGraph("Graphic/ストーリー.png");
 			SetsumeiImage[1] = LoadGraph("Graphic/操作説明改良版.png");
@@ -88,7 +90,9 @@ STATE setsumei() {
 			InternalCurrentState = SetsumeiScene();
 			break;
 		case SceneEnded:
+			// 終了処理
 			SetsumeiInitialized = false;
+			StopSoundMem(GetHandle("Sound1"));
 			return GAME;
 	}
 

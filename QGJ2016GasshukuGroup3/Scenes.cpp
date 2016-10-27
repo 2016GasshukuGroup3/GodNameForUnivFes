@@ -3,6 +3,7 @@
 #include "MapEditor.h"
 #include "Scenes.h"
 #include "Lift.h"
+#include "Asset.h"
 #include <complex>
 #include <cmath>
 #include<algorithm>
@@ -16,7 +17,7 @@ int KetteiSound;
 
 bool titleflag = false;
 int titleHandle;
-int GameMode_EasyImage, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
+int GameMode_EasyImage = -1, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
 int PressStartImage;
 
 int FontHandle;
@@ -36,20 +37,31 @@ STATE title() {
 		CurrentSelection = GameMode_None;
 
 		//音楽のための変数と読み込み
-		Sound1 = LoadSoundMem("音楽/合宿QGJ_タイトル.ogg");
-		//		ChangeVolumeSoundMem(216, Sound1);
-		Sound2 = LoadSoundMem("音楽/合宿QGJ_メイン.ogg");
-		//	ChangeVolumeSoundMem(216, Sound2);
-		Sound3 = LoadSoundMem("音楽/合宿QGJ_リザルト.ogg");
-		//ChangeVolumeSoundMem(216, Sound3);
-		KetteiSound = LoadSoundMem("音楽/合宿QGJ_SE_決定音.ogg");
+		// Sound1 = LoadSoundMem("音楽/合宿QGJ_タイトル.ogg");
+		AddMusicHandle("Sound1", "音楽/合宿QGJ_タイトル.ogg");
+		Sound1 = GetHandle("Sound1");
+		// ChangeVolumeSoundMem(216, Sound1);
+		// Sound2 = LoadSoundMem("音楽/合宿QGJ_メイン.ogg");
+		AddMusicHandle("Sound2", "音楽/合宿QGJ_メイン.ogg");
+		Sound2 = GetHandle("Sound2");
+		// ChangeVolumeSoundMem(216, Sound2);
+		// Sound3 = LoadSoundMem("音楽/合宿QGJ_リザルト.ogg");
+		AddMusicHandle("Sound3", "音楽/合宿QGJ_リザルト.ogg");
+		Sound3 = GetHandle("Sound3");
+		// ChangeVolumeSoundMem(216, Sound3);
+		// KetteiSound = LoadSoundMem("音楽/合宿QGJ_SE_決定音.ogg");
+		AddMusicHandle("KetteiSound", "音楽/合宿QGJ_SE_決定音.ogg");
+		KetteiSound = GetHandle("KetteiSound");
 
-		GameMode_EasyImage = LoadGraph("Graphic/イージーモード.png");
-		GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
-		GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
-		GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
+		// 一度だけ初期化
+		if (GameMode_EasyImage == -1) {
+			GameMode_EasyImage = LoadGraph("Graphic/イージーモード.png");
+			GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
+			GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
+			GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
 
-		PressStartImage = LoadGraph("Graphic/PRESS_START.png");
+			PressStartImage = LoadGraph("Graphic/PRESS_START.png");
+		}
 
 		PlaySoundMem(Sound1, DX_PLAYTYPE_LOOP);
 
@@ -68,7 +80,7 @@ STATE title() {
 			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 				// 作成したフォントデータを削除する
 				DeleteFontToHandle(FontHandle);
-				StopSoundMem(Sound1);
+				// StopSoundMem(Sound1);
 				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
 				return SETSUMEI;
 			}
