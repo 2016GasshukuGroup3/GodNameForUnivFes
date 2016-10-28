@@ -521,6 +521,8 @@ STATE game() {
 	else {
 		// 強制終了コマンド
 		if (getResetRequestStatus()) {
+			player.deathcount1 = 0;
+			player.deathcount2 = 0;
 			StopSoundMem(Sound2);
 			PlaySoundMem(Sound1, DX_PLAYTYPE_LOOP);
 			gameflag = false;
@@ -1224,8 +1226,7 @@ void Boss::Draw() {
 	DrawGraph(0, 0, body, TRUE);
 	// 死亡回数の表示
 	//DrawFormatString(500, 40, blue, "%d", player.deathcount2);
-	DrawGraph(360, 0, DeathCountImage, TRUE);
-	DrawNumber(470, 0, player.deathcount1);
+
 	// プレイヤーの描画
 	if ((player.InvulnerableTime / 3) % 2 == 0) {
 		if (player.FaceDirection == Player::Direction::Direction_Left) {
@@ -1258,6 +1259,8 @@ void Boss::Draw() {
 		}
 	}
 
+	DrawGraph(360, 0, DeathCountImage, TRUE);
+	DrawNumber(470, 0, player.deathcount1);
 	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
 }
 
@@ -1352,10 +1355,12 @@ STATE result() {
 		DrawNumber(185, 368, timer / 60);
 
 		// DrawStringToHandle(100, 400, "PRESS SPACE", GetColor(0, 0, 255), FontHandle2);
-		player.deathcount1 = 0;
-		player.deathcount2 = 0;
+		// ▼ よくわからない処理なのでコメントアウトさせてもらいました
+		// player.deathcount1 = 0;
+		// player.deathcount2 = 0;
 		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 			player.deathcount1 = 0;
+			player.deathcount2 = 0;
 			titleflag = false;
 			bossflag = false;
 			gameflag = false;
