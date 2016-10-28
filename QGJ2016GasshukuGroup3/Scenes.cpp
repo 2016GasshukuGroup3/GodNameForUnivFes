@@ -1223,7 +1223,9 @@ void Boss::Draw() {
 	DrawGraph(ax, ay, arm, TRUE);
 	DrawGraph(0, 0, body, TRUE);
 	// 死亡回数の表示
-	DrawFormatString(500, 40, blue, "%d", player.deathcount2);
+	//DrawFormatString(500, 40, blue, "%d", player.deathcount2);
+	DrawGraph(360, 0, DeathCountImage, TRUE);
+	DrawNumber(470, 0, player.deathcount1);
 	// プレイヤーの描画
 	if ((player.InvulnerableTime / 3) % 2 == 0) {
 		if (player.FaceDirection == Player::Direction::Direction_Left) {
@@ -1336,15 +1338,20 @@ int FontHandle2;
 STATE result() {
 	if (!resultflag) {
 		resultHandle = LoadGraph("Graphic/リザルト画面.png");
+		AddGraphicHandle("リザルト画面スコア", "Graphic/リザルト画面スコア.png");
 		FontHandle = CreateFontToHandle(NULL, 40, 3, DX_FONTTYPE_ANTIALIASING);
 		FontHandle2 = CreateFontToHandle(NULL, 30, 3, DX_FONTTYPE_ANTIALIASING);
 		resultflag = true;
 	}
 	else {
 		DrawGraph(0, 0, resultHandle, false);
-		DrawFormatStringToHandle(50, 300, GetColor(0, 255, 0), FontHandle, "死亡回数 %3d回\n", player.deathcount2);
-		DrawFormatStringToHandle(50, 350, GetColor(0, 255, 0), FontHandle, "クリア時間 %3.1f秒\n", (double)timer / 60);
-		DrawStringToHandle(100, 400, "PRESS SPACE", GetColor(0, 0, 255), FontHandle2);
+		DrawGraph(15, 258, GetHandle("リザルト画面スコア"), TRUE);
+		//DrawFormatStringToHandle(50, 300, GetColor(0, 255, 0), FontHandle, "死亡回数 %3d回\n", player.deathcount2);
+		//DrawFormatStringToHandle(50, 350, GetColor(0, 255, 0), FontHandle, "クリア時間 %3.1f秒\n", (double)timer / 60);
+		DrawNumber(185, 308, player.deathcount2);
+		DrawNumber(185, 368, timer / 60);
+
+		// DrawStringToHandle(100, 400, "PRESS SPACE", GetColor(0, 0, 255), FontHandle2);
 		player.deathcount1 = 0;
 		player.deathcount2 = 0;
 		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
