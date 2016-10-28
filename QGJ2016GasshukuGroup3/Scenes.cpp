@@ -1255,6 +1255,8 @@ void Boss::Draw() {
 			}
 		}
 	}
+
+	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
 }
 
 // ゲームオーバーかどうか
@@ -1293,6 +1295,7 @@ STATE boss() {
 		bossflag = true;
 		SetLoopPosSoundMem(9600, enemy.bgm);
 		PlaySoundMem(enemy.bgm, DX_PLAYTYPE_LOOP);
+		AddGraphicHandle("神のテロップ", "Graphic/神のテロップ.png");
 
 		if (ThrowSound == -1) {
 			ThrowSound = LoadSoundMem("音楽/合宿QGJ_SE_ハンマー振り下ろし.ogg");
