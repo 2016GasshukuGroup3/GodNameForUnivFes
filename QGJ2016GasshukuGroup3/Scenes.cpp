@@ -3,6 +3,7 @@
 #include "MapEditor.h"
 #include "Scenes.h"
 #include "Lift.h"
+#include "Asset.h"
 #include <complex>
 #include <cmath>
 #include<algorithm>
@@ -16,7 +17,7 @@ int KetteiSound;
 
 bool titleflag = false;
 int titleHandle;
-int GameMode_EasyImage, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
+int GameMode_EasyImage = -1, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
 int PressStartImage;
 
 int FontHandle;
@@ -36,20 +37,31 @@ STATE title() {
 		CurrentSelection = GameMode_None;
 
 		//音楽のための変数と読み込み
-		Sound1 = LoadSoundMem("音楽/合宿QGJ_タイトル.ogg");
-		//		ChangeVolumeSoundMem(216, Sound1);
-		Sound2 = LoadSoundMem("音楽/合宿QGJ_メイン.ogg");
-		//	ChangeVolumeSoundMem(216, Sound2);
-		Sound3 = LoadSoundMem("音楽/合宿QGJ_リザルト.ogg");
-		//ChangeVolumeSoundMem(216, Sound3);
-		KetteiSound = LoadSoundMem("音楽/合宿QGJ_SE_決定音.ogg");
+		// Sound1 = LoadSoundMem("音楽/合宿QGJ_タイトル.ogg");
+		AddMusicHandle("Sound1", "音楽/合宿QGJ_タイトル.ogg");
+		Sound1 = GetHandle("Sound1");
+		// ChangeVolumeSoundMem(216, Sound1);
+		// Sound2 = LoadSoundMem("音楽/合宿QGJ_メイン.ogg");
+		AddMusicHandle("Sound2", "音楽/合宿QGJ_メイン.ogg");
+		Sound2 = GetHandle("Sound2");
+		// ChangeVolumeSoundMem(216, Sound2);
+		// Sound3 = LoadSoundMem("音楽/合宿QGJ_リザルト.ogg");
+		AddMusicHandle("Sound3", "音楽/合宿QGJ_リザルト.ogg");
+		Sound3 = GetHandle("Sound3");
+		// ChangeVolumeSoundMem(216, Sound3);
+		// KetteiSound = LoadSoundMem("音楽/合宿QGJ_SE_決定音.ogg");
+		AddMusicHandle("KetteiSound", "音楽/合宿QGJ_SE_決定音.ogg");
+		KetteiSound = GetHandle("KetteiSound");
 
-		GameMode_EasyImage = LoadGraph("Graphic/イージーモード.png");
-		GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
-		GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
-		GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
+		// 一度だけ初期化
+		if (GameMode_EasyImage == -1) {
+			GameMode_EasyImage = LoadGraph("Graphic/イージーモード.png");
+			GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
+			GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
+			GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
 
-		PressStartImage = LoadGraph("Graphic/PRESS_START.png");
+			PressStartImage = LoadGraph("Graphic/PRESS_START.png");
+		}
 
 		PlaySoundMem(Sound1, DX_PLAYTYPE_LOOP);
 
@@ -68,7 +80,7 @@ STATE title() {
 			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 				// 作成したフォントデータを削除する
 				DeleteFontToHandle(FontHandle);
-				StopSoundMem(Sound1);
+				// StopSoundMem(Sound1);
 				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
 				return SETSUMEI;
 			}
@@ -344,7 +356,7 @@ void moveBridge(Tile *b) {
 }
 
 bool gameflag = false;
-int BackImageHandle, jimen, toge[4], hasi, ballHandle;
+int BackImageHandle = -1, jimen, toge[4], hasi, ballHandle;
 int NumberImages[10], StageImage, TimeImage, MinImage, SecImage, DeathCountImage;
 int JumpSound, KilledSound;
 int timer;
@@ -414,27 +426,28 @@ STATE game() {
 		//ステージの初期化
 		stagenum = 1;
 
+		if (BackImageHandle == -1) {
+			// 背景の読み込み
+			BackImageHandle = LoadGraph("Graphic/背景.jpg");
+			// プレイヤーの画像の読み込み
+			LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
 
-		// 背景の読み込み
-		BackImageHandle = LoadGraph("Graphic/背景.jpg");
-		// プレイヤーの画像の読み込み
-		LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
+			LoadDivGraph("Graphic/num.png", 10, 10, 1, 16, 32, NumberImages);
+			StageImage = LoadGraph("Graphic/STAGE.png");
+			TimeImage = LoadGraph("Graphic/TIME.png");
+			MinImage = LoadGraph("Graphic/MIN.png");
+			SecImage = LoadGraph("Graphic/SEC.png");
+			DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
 
-		LoadDivGraph("Graphic/num.png", 10, 10, 1, 16, 32, NumberImages);
-		StageImage = LoadGraph("Graphic/STAGE.png");
-		TimeImage = LoadGraph("Graphic/TIME.png");
-		MinImage = LoadGraph("Graphic/MIN.png");
-		SecImage = LoadGraph("Graphic/SEC.png");
-		DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
-
-		jimen = LoadGraph("Graphic/Jimen.png");
-		hasi = LoadGraph("Graphic/Hasi.png");
-		for (int i = 0; i < 4; ++i) {
-			toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
+			jimen = LoadGraph("Graphic/Jimen.png");
+			hasi = LoadGraph("Graphic/Hasi.png");
+			for (int i = 0; i < 4; ++i) {
+				toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
+			}
+			ballHandle = LoadGraph("Graphic/ball.png");
+			JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
+			KilledSound = LoadSoundMem("音楽/合宿QGJ_SE_死亡.ogg");
 		}
-		ballHandle = LoadGraph("Graphic/ball.png");
-		JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
-		KilledSound = LoadSoundMem("音楽/合宿QGJ_SE_死亡.ogg");
 
 		for (auto& item : Lifts) {
 			item.Reset();
@@ -688,8 +701,8 @@ STATE game() {
 		}
 		//落ちてくる球
 		for (int i = 0; i < ballcount; ++i) {
-			//	if (ball[i].flag)
-			DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
+			if (ball[i].flag)
+				DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
 		}
 
 		//落ちる橋
