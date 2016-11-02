@@ -21,6 +21,8 @@ class Boss : public Rect{
 	bool gameover,flag = false;
 	Rect p;
 	vector<vector<Rect>> tile;
+
+	int GetLeftTime() const;
 public:
 	int body, arm, bgm, time,time2;
 	Boss();

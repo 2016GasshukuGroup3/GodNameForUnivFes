@@ -190,8 +190,6 @@ bool Player::OnCollideFromBottom(int& tileid, int i, int j) {
 		return true;
 	}
 
-	fly = 0;//0のとき飛べる
-
 	for (int id : { 5, 6, 7, 8 }) {
 		if (tileid == id) {
 			if (Shape::Rectangle_t(i * MapTile::MapSize + Player::CollisionOffset, j * MapTile::MapSize + Player::CollisionOffset, MapTile::MapSize - Player::CollisionOffset * 2, MapTile::MapSize - Player::CollisionOffset * 2).
@@ -206,6 +204,7 @@ bool Player::OnCollideFromBottom(int& tileid, int i, int j) {
 		}
 	}
 
+	fly = 0;//0のとき飛べる
 	return false;
 }
 
@@ -1128,19 +1127,19 @@ void Boss::Update() {
 		}
 		maxhp = hp = 6;
 		player.x = 60, player.y = 100;
-		time = 0;
+		// time = 0;
 		player.InvulnerableTime = 60;
 		return;
 	}
 	// 血しぶきのエフェクトの更新
 	particle.UpdateParticles();
-	if (time >= 170 && !flag) {
+	if (time >= 270 && !flag) {
 		flag = true;
 		time2 = 0;
 		PlaySoundMem(ThrowSound, DX_PLAYTYPE_BACK);
 	}
 	// 時間経過によってトゲを飛ばす
-	if (time >= 200) {
+	if (time >= 300) {
 		int i, j, k = 0, dir;
 		switch (hp)
 		{
@@ -1158,7 +1157,7 @@ void Boss::Update() {
 					}
 				}
 			}
-			time = -100;
+			time = 0;
 			break;
 		case 4:
 		case 3:
@@ -1174,7 +1173,7 @@ void Boss::Update() {
 					}
 				}
 			}
-			time = -100;
+			time = 0;
 			break;
 		case 2:
 		case 1:
@@ -1262,6 +1261,9 @@ void Boss::Draw() {
 	DrawGraph(360, 0, DeathCountImage, TRUE);
 	DrawNumber(470, 0, player.deathcount1);
 	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
+
+	DrawGraph(570, 40, SecImage, TRUE);
+	DrawNumber(410, 40, GetLeftTime() / 60);
 }
 
 // ゲームオーバーかどうか
@@ -1291,6 +1293,10 @@ bool Boss::IsEnd() {
 	// }
 }
 
+int Boss::GetLeftTime() const {
+	return hp * 300 - time;
+}
+
 Boss enemy;
 
 STATE boss() {
@@ -1301,7 +1307,7 @@ STATE boss() {
 		SetLoopPosSoundMem(9600, enemy.bgm);
 		PlaySoundMem(enemy.bgm, DX_PLAYTYPE_LOOP);
 		AddGraphicHandle("神のテロップ", "Graphic/神のテロップ.png");
-
+		
 		if (ThrowSound == -1) {
 			ThrowSound = LoadSoundMem("音楽/合宿QGJ_SE_ハンマー振り下ろし.ogg");
 		}
