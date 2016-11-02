@@ -1,5 +1,6 @@
 #include "Scenes.h"
 #include "Input.h"
+#include "Asset.h"
 #include <string>
 
 static int SetsumeiImage[2] = { -1 };
@@ -17,11 +18,11 @@ static enum InternalState {
 } InternalCurrentState;
 
 InternalState StoryScene() {
-	if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE) || (GetJoypadInputState(DX_INPUT_PAD1) & PAD_INPUT_1) != 0) {
+	if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 		++Phase;
 
 		if (Phase >= 10) {
-			Phase = 0;
+			Phase = 1;
 			return InternalState::SetsumeiPhase;
 		}
 	}
@@ -64,9 +65,10 @@ STATE setsumei() {
 		Flames = 0;
 		InternalCurrentState = InternalState::StoryPhase;
 
+		// 画像などがまだ読み込まれていない時に一度だけ初期化
 		if (SetsumeiImage[0] == -1) {
 			SetsumeiImage[0] = LoadGraph("Graphic/ストーリー.png");
-			SetsumeiImage[1] = LoadGraph("Graphic/操作説明.png");
+			SetsumeiImage[1] = LoadGraph("Graphic/操作説明改良版.png");
 
 			for (int i = 0; i < _countof(StoryImages); i++) {
 				StoryImages[i] = LoadGraph((std::string("Graphic/あらすじ") + std::to_string(i + 1) + ".png").c_str());
@@ -88,7 +90,9 @@ STATE setsumei() {
 			InternalCurrentState = SetsumeiScene();
 			break;
 		case SceneEnded:
+			// 終了処理
 			SetsumeiInitialized = false;
+			StopSoundMem(GetHandle("Sound1"));
 			return GAME;
 	}
 

@@ -17,7 +17,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	STATE nextstate = TITLE;
 	// ƒƒCƒ“ƒ‹[ƒv
 	while (true) {
-		if (ProcessMessage() == -1 || ClearDrawScreen() == -1 || gpUpdateKey() != 0) {
+		if (ProcessMessage() == -1 || ClearDrawScreen() == -1 || gpUpdatePad() != 0 || gpUpdateKey() != 0) {
 			// return -1;
 			break;
 		}

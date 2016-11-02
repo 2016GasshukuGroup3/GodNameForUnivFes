@@ -73,6 +73,7 @@ private:
 public:
 	MapViewer();
 	MapViewer(int);
+	MapViewer(string fileName, int);
 	void Update();
 	void Draw();
 	void DrawInfo();
