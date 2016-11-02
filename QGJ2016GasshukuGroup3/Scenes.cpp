@@ -71,19 +71,19 @@ STATE title() {
 	}
 	else {
 		if (CurrentSelection == GameMode_None) {
-			// キーの入力待ち
-			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+		// キーの入力待ち
+		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 				CurrentSelection = GameMode_Easy;
 			}
 		} else {
 			// キーの入力待ち
 			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
-				// 作成したフォントデータを削除する
-				DeleteFontToHandle(FontHandle);
+			// 作成したフォントデータを削除する
+			DeleteFontToHandle(FontHandle);
 				// StopSoundMem(Sound1);
-				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
-				return SETSUMEI;
-			}
+			PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
+			return SETSUMEI;
+		}
 
 			if (getKeyPress(KEY_INPUT_UP, PRESS_ONCE) || getKeyPress(KEY_INPUT_DOWN, PRESS_ONCE)) {
 				if (CurrentSelection == GameMode_Easy) {
@@ -116,8 +116,8 @@ STATE title() {
 		} else {
 			DrawGraph(200, 400, PressStartImage, TRUE);
 			// DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
-			//ScreenFlip();//描画の反映
-		}
+		//ScreenFlip();//描画の反映
+	}
 	}
 
 	return TITLE;
@@ -397,7 +397,7 @@ void DrawNumber(int x, int y, int Number) {
 		if (!(RankNum == 0 && !Appeared) || i == 1) {
 			Appeared = true;
 			DrawGraph(x + 20 * Counter, y, NumberImages[RankNum], TRUE);
-		}
+}
 
 		Counter++;
 		TempNum -= i * RankNum;
@@ -426,10 +426,10 @@ STATE game() {
 		stagenum = 1;
 
 		if (BackImageHandle == -1) {
-			// 背景の読み込み
-			BackImageHandle = LoadGraph("Graphic/背景.jpg");
-			// プレイヤーの画像の読み込み
-			LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
+		// 背景の読み込み
+		BackImageHandle = LoadGraph("Graphic/背景.jpg");
+		// プレイヤーの画像の読み込み
+		LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
 
 			LoadDivGraph("Graphic/num.png", 10, 10, 1, 16, 32, NumberImages);
 			StageImage = LoadGraph("Graphic/STAGE.png");
@@ -438,14 +438,14 @@ STATE game() {
 			SecImage = LoadGraph("Graphic/SEC.png");
 			DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
 
-			jimen = LoadGraph("Graphic/Jimen.png");
-			hasi = LoadGraph("Graphic/Hasi.png");
-			for (int i = 0; i < 4; ++i) {
-				toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
-			}
-			ballHandle = LoadGraph("Graphic/ball.png");
-			JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
-			KilledSound = LoadSoundMem("音楽/合宿QGJ_SE_死亡.ogg");
+		jimen = LoadGraph("Graphic/Jimen.png");
+		hasi = LoadGraph("Graphic/Hasi.png");
+		for (int i = 0; i < 4; ++i) {
+			toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
+		}
+		ballHandle = LoadGraph("Graphic/ball.png");
+		JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
+		KilledSound = LoadSoundMem("音楽/合宿QGJ_SE_死亡.ogg");
 		}
 
 		for (auto& item : Lifts) {
@@ -631,7 +631,7 @@ STATE game() {
 		player.x = NewX;
 		player.y = NewY;
 		//ボス戦gameoverのための設定
-		player.deathcount3 = player.deathcount2 + 10;
+		player.deathcount3 = player.deathcount2 + 5;
 		// 挟まり判定
 		if ((TempCollideDirection & Direction::LeftAndRight) == Direction::LeftAndRight || (TempCollideDirection & Direction::UpAndDown) == Direction::UpAndDown) {
 			player.deathcount2++;
@@ -643,7 +643,15 @@ STATE game() {
 		//死んだらdeathcountを増やし仕掛けが元に戻る。playerは中間に飛ぶ(死亡処理)
 		if (player.deathcount1 < player.deathcount2) {
 			PlaySoundMem(KilledSound, DX_PLAYTYPE_BACK);
-
+			//三分経ったらゲームオーバー
+			if (timer >= 180 * 60) {
+				titleflag = false;
+				gameflag = false;
+				if (CheckSoundMem(Sound2) == 1) {
+					StopSoundMem(Sound2);
+				}
+				return GAMEOVER;
+			}
 			player.deathcount1 = player.deathcount2;
 			for (int i = 0; i < 30; ++i) {
 				auto p = (new Particle(player.x, player.y));
@@ -702,8 +710,8 @@ STATE game() {
 		}
 		//落ちてくる球
 		for (int i = 0; i < ballcount; ++i) {
-			if (ball[i].flag)
-				DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
+			//if (ball[i].flag)
+			DrawGraph(ball[i].x, ball[i].y, ballHandle, TRUE);
 		}
 
 		//落ちる橋
@@ -762,7 +770,10 @@ STATE game() {
 		DrawNumber(280, 60, (180 - timer / 60) / 60);
 		DrawGraph(570, 60, SecImage, TRUE);
 		DrawNumber(410, 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
-
+		if (timer / 60 > 170) {
+			if(timer/60<181)
+			DrawRotaGraph(320, 240, 5, 0, NumberImages[180-timer/60], TRUE, FALSE);
+		}
 		if (player.x >= 608) {
 			if (stagenum >= 5) {
 				gameflag = false;
@@ -816,14 +827,14 @@ STATE game() {
 		}
 		++timer;
 		//三分経ったらゲームオーバー
-		if (timer >= 180 * 60) {
-			titleflag = false;
-			gameflag = false;
-			if (CheckSoundMem(Sound2) == 1) {
-				StopSoundMem(Sound2);
-			}
-			return GAMEOVER;
-		}
+		//if (timer >= 180 * 60) {
+			//titleflag = false;
+			//gameflag = false;
+			//if (CheckSoundMem(Sound2) == 1) {
+			//	StopSoundMem(Sound2);
+			//}
+			//return GAMEOVER;
+		//}
 		mv.Draw();
 		particle.DrawParticles();
 	}
@@ -864,6 +875,7 @@ void Boss::Init() {
 	body = LoadGraph("Graphic/God.png");
 	arm = LoadGraph("Graphic/GodArm.png");
 	bgm = LoadSoundMem("音楽/合宿QGJ_ボス戦.ogg");
+	AddGraphicHandle("背景2","Graphic/背景2.png");
 	ax = -40, ay = -100;
 	gameover = false;
 	time = 0;
@@ -1257,7 +1269,7 @@ void Boss::Draw() {
 			}
 		}
 	}
-
+	DrawGraph(0, 0, GetHandle("背景2.png"), TRUE);
 	DrawGraph(360, 0, DeathCountImage, TRUE);
 	DrawNumber(470, 0, player.deathcount1);
 	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
@@ -1270,7 +1282,7 @@ void Boss::Draw() {
 bool Boss::IsOver() {
 	// ゲームオーバーの条件をここに追加
 	//player.deathcount3 = player.deathcount2 + 10;
-	return player.deathcount2 >= player.deathcount3;
+	return player.deathcount2 >= player.deathcount3+(180*60-timer)/60/30;
 
 	return gameover;
 	// この書き方は次の書き方と同じ
@@ -1307,7 +1319,7 @@ STATE boss() {
 		SetLoopPosSoundMem(9600, enemy.bgm);
 		PlaySoundMem(enemy.bgm, DX_PLAYTYPE_LOOP);
 		AddGraphicHandle("神のテロップ", "Graphic/神のテロップ.png");
-		
+
 		if (ThrowSound == -1) {
 			ThrowSound = LoadSoundMem("音楽/合宿QGJ_SE_ハンマー振り下ろし.ogg");
 		}
@@ -1365,8 +1377,8 @@ STATE result() {
 		// player.deathcount1 = 0;
 		// player.deathcount2 = 0;
 		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
-			player.deathcount1 = 0;
-			player.deathcount2 = 0;
+		player.deathcount1 = 0;
+		player.deathcount2 = 0;
 			titleflag = false;
 			bossflag = false;
 			gameflag = false;
