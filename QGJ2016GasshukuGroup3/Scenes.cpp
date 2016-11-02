@@ -876,6 +876,7 @@ void Boss::Init() {
 	body = LoadGraph("Graphic/God.png");
 	arm = LoadGraph("Graphic/GodArm.png");
 	bgm = LoadSoundMem("âπäy/çáèhQGJ_É{ÉXêÌ.ogg");
+	AddGraphicHandle("îwåi2","Graphic/îwåi2.png");
 	ax = -40, ay = -100;
 	gameover = false;
 	time = 0;
@@ -1269,7 +1270,7 @@ void Boss::Draw() {
 			}
 		}
 	}
-	DrawGraph(0, 0, GetHandle("îwåiÇQ.png"), TRUE);
+	DrawGraph(0, 0, GetHandle("îwåi2.png"), TRUE);
 	DrawGraph(360, 0, DeathCountImage, TRUE);
 	DrawNumber(470, 0, player.deathcount1);
 	DrawGraph(27, 394, GetHandle("ê_ÇÃÉeÉçÉbÉv"), TRUE);
