@@ -652,6 +652,7 @@ STATE game() {
 					StopSoundMem(Sound2);
 				}
 				return GAMEOVER;
+			}
 			player.deathcount1 = player.deathcount2;
 			for (int i = 0; i < 30; ++i) {
 				auto p = (new Particle(player.x, player.y));
@@ -770,7 +771,10 @@ STATE game() {
 		DrawNumber(280, 60, (180 - timer / 60) / 60);
 		DrawGraph(570, 60, SecImage, TRUE);
 		DrawNumber(410, 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
-
+		if (timer / 60 > 170) {
+			if(timer/60<181)
+			DrawRotaGraph(320, 240, 5, 0, NumberImages[180-timer/60], TRUE, FALSE);
+		}
 		if (player.x >= 608) {
 			if (stagenum >= 5) {
 				gameflag = false;
@@ -831,7 +835,7 @@ STATE game() {
 			//	StopSoundMem(Sound2);
 			//}
 			//return GAMEOVER;
-		}
+		//}
 		mv.Draw();
 		particle.DrawParticles();
 	}
@@ -1265,7 +1269,7 @@ void Boss::Draw() {
 			}
 		}
 	}
-
+	DrawGraph(0, 0, GetHandle("背景２.png"), TRUE);
 	DrawGraph(360, 0, DeathCountImage, TRUE);
 	DrawNumber(470, 0, player.deathcount1);
 	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
@@ -1275,7 +1279,7 @@ void Boss::Draw() {
 bool Boss::IsOver() {
 	// ゲームオーバーの条件をここに追加
 	//player.deathcount3 = player.deathcount2 + 10;
-	return player.deathcount2 >= player.deathcount3+(180*60-timer)%60/30;
+	return player.deathcount2 >= player.deathcount3+(180*60-timer)/60/30;
 
 	return gameover;
 	// この書き方は次の書き方と同じ
