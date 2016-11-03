@@ -12,17 +12,19 @@ Lift::Lift() :
 }
 
 void Lift::Initialize() {
-	if (GraphHandle == -1) {
-		GraphHandle = MakeScreen(32 * CurrentWidth, 32);
-		int TempGraph = LoadGraph("Graphic/Jimen.png");
-		SetDrawScreen(GraphHandle);
+	if (GraphHandle != -1) {
+		DeleteGraph(GraphHandle);
+	}	
 
-		for (int i = 0; i < CurrentWidth; i++) {
-			assert(DrawGraph(32 * i, 0, TempGraph, FALSE) == 0 || TempGraph == -1);
-		}
-		DeleteGraph(TempGraph);
-		SetDrawScreen(DX_SCREEN_BACK);
+	GraphHandle = MakeScreen(32 * CurrentWidth, 32);
+	int TempGraph = LoadGraph("Graphic/Jimen.png");
+	SetDrawScreen(GraphHandle);
+
+	for (int i = 0; i < CurrentWidth; i++) {
+		assert(DrawGraph(32 * i, 0, TempGraph, FALSE) == 0 || TempGraph == -1);
 	}
+	DeleteGraph(TempGraph);
+	SetDrawScreen(DX_SCREEN_BACK);
 }
 
 void Lift::Reset() {

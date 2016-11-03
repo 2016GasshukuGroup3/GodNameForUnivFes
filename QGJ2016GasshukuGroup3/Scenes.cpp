@@ -844,7 +844,7 @@ STATE game() {
 bool bossflag = false;
 
 Boss::Boss() {
-	Init();
+	// Init();
 }
 
 void drillAttack2(Tile* drill) {
@@ -875,7 +875,7 @@ void Boss::Init() {
 	body = LoadGraph("Graphic/God.png");
 	arm = LoadGraph("Graphic/GodArm.png");
 	bgm = LoadSoundMem("âπäy/çáèhQGJ_É{ÉXêÌ.ogg");
-	AddGraphicHandle("îwåi2","Graphic/îwåi2.png");
+	AddGraphicHandle("îwåi2","Graphic/stage -boss-.png");
 	ax = -40, ay = -100;
 	gameover = false;
 	time = 0;
@@ -1233,6 +1233,8 @@ void Boss::Draw() {
 			flag = false;
 		}
 	}
+
+	DrawGraph(0, 0, GetHandle("îwåi2"), TRUE);
 	DrawGraph(ax, ay, arm, TRUE);
 	DrawGraph(0, 0, body, TRUE);
 	// éÄñSâÒêîÇÃï\é¶
@@ -1269,7 +1271,7 @@ void Boss::Draw() {
 			}
 		}
 	}
-	DrawGraph(0, 0, GetHandle("îwåi2.png"), TRUE);
+
 	DrawGraph(360, 0, DeathCountImage, TRUE);
 	DrawNumber(470, 0, player.deathcount1);
 	DrawGraph(27, 394, GetHandle("ê_ÇÃÉeÉçÉbÉv"), TRUE);
