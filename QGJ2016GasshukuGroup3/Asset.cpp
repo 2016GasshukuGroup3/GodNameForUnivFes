@@ -7,7 +7,8 @@
 static std::unordered_map<std::string, int> Handles;
 
 bool AddHandle(const char Key[], int Handle, bool AlwaysRegisterValue) {
-	if (AlwaysRegisterValue || Handles.find(Key) == Handles.end()) {
+	// 常に登録するか、キーが登録されていない、かつ、ハンドルが有効ならば追加する。
+	if ((AlwaysRegisterValue || Handles.find(Key) == Handles.end()) && Handle != -1) {
 		Handles[Key] = Handle;
 		return true;
 	} else {
