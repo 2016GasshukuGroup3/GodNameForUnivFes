@@ -10,6 +10,7 @@ static bool SetsumeiInitialized = false;
 static int FontHandle = -1;
 static int Phase = 0;
 static int Flames = 0;
+static bool SpacePressed = false;
 
 static enum InternalState {
 	StoryPhase,
@@ -18,7 +19,16 @@ static enum InternalState {
 } InternalCurrentState;
 
 InternalState StoryScene() {
-	if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+	int PressedTime = getKey(KEY_INPUT_SPACE);
+
+	if (PressedTime > 120) {
+		SpacePressed = false;
+		return InternalState::SceneEnded;
+	} else if (PressedTime > 0) {
+		SpacePressed = true;
+	} else if (SpacePressed) {
+		SpacePressed = false;
+
 		++Phase;
 
 		if (Phase >= 10) {
