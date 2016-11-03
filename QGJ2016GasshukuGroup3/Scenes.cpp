@@ -1119,25 +1119,25 @@ void Boss::Update() {
 	player.y = NewY;
 
 	// プレイヤーが画面の領域外に行ったらアウト
-	if (player.y > 375 || player.x < 32 || player.x > 596 || player.y < 32) {
-		for (int i = 0; i < 50; ++i) {
-			auto pt = new Particle(player.x, player.y);
-			particle.Factory(pt);
-		}
-		player.deathcount1 = player.deathcount2;
-		maxhp = hp = 6;
-		player.x = 60, player.y = 100;
-		player.fly = 0;
-		player.deathcount2++;
-	}
+	//if (player.y > 375 || player.x < 32 || player.x > 596 || player.y < 32) {
+	//	for (int i = 0; i < 50; ++i) {
+	//		auto pt = new Particle(player.x, player.y);
+	//		particle.Factory(pt);
+	//	}
+	//	player.deathcount1 = player.deathcount2;
+	//	// maxhp = hp = 6;
+	//	player.x = 60, player.y = 100;
+	//	player.fly = 0;
+	//	player.deathcount2++;
+	//}
 	// 死亡処置
-	else if (player.deathcount1 < player.deathcount2) {
+	if (player.deathcount1 < player.deathcount2) {
 		player.deathcount1 = player.deathcount2;
 		for (int i = 0; i < 50; ++i) {
 			auto pt = new Particle(player.x, player.y);
 			particle.Factory(pt);
 		}
-		maxhp = hp = 6;
+		// maxhp = hp = 6;
 		player.x = 60, player.y = 100;
 		// time = 0;
 		player.InvulnerableTime = 60;
