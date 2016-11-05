@@ -364,7 +364,7 @@ void moveBridge(Tile *b) {
 }
 
 bool gameflag = false;
-int BackImageHandle = -1, jimen, toge[4], hasi, ballHandle;
+int BackImageHandle[5] = { -1 }, jimen, toge[4], hasi, ballHandle;
 int NumberImages[10], StageImage, TimeImage, MinImage, SecImage, DeathCountImage;
 int JumpSound, KilledSound;
 int timer;
@@ -439,11 +439,16 @@ STATE game() {
 		//ƒXƒe[ƒW‚Ì‰Šú‰»
 		stagenum = 1;
 
-		if (BackImageHandle == -1) {
-		// ”wŒi‚Ì“Ç‚İ‚İ
-		BackImageHandle = LoadGraph("Graphic/”wŒi.jpg");
-		// ƒvƒŒƒCƒ„[‚Ì‰æ‘œ‚Ì“Ç‚İ‚İ
-		LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
+		if (BackImageHandle[0] == -1) {
+			// ”wŒi‚Ì“Ç‚İ‚İ
+			BackImageHandle[0] = LoadGraph("Graphic/stage1.png");
+			BackImageHandle[1] = LoadGraph("Graphic/stage2.png");
+			BackImageHandle[2] = LoadGraph("Graphic/stage3.png");
+			BackImageHandle[3] = LoadGraph("Graphic/stage4.png");
+			BackImageHandle[4] = LoadGraph("Graphic/stage5.png");
+
+			// ƒvƒŒƒCƒ„[‚Ì‰æ‘œ‚Ì“Ç‚İ‚İ
+			LoadDivGraph("Graphic/Character.png", 3, 3, 1, 32, 64, PlayerImageHandles);
 
 			LoadDivGraph("Graphic/num.png", 10, 10, 1, 16, 32, NumberImages);
 			StageImage = LoadGraph("Graphic/STAGE.png");
@@ -714,8 +719,8 @@ STATE game() {
 
 
 		// ”wŒi‚Ì•`‰æ
-		DrawGraph((timer / 10) % 640, 0, BackImageHandle, FALSE);
-		DrawGraph((timer / 10) % 640 - 640, 0, BackImageHandle, FALSE);
+		DrawGraph((timer / 10) % 640, 0, BackImageHandle[stagenum - 1], FALSE);
+		DrawGraph((timer / 10) % 640 - 640, 0, BackImageHandle[stagenum - 1], FALSE);
 		
 		for (int i = 0; i < MapTilesHeight; ++i) {
 			for (int j = 0; j < MapTilesWidth; ++j) {
@@ -1264,7 +1269,7 @@ void Boss::Update() {
 			dir = (i == 0) ? 3 : 1;
 			for (j = 0; j < H; ++j) {
 				if (MapTiles[i][j] >= drillsuf - 4 && GetRand(1)) {//“®‚­ƒgƒQ
-					drill[k] = Tile{ (i + k * dx[dir]) * 32, j * 32, 0, 0, 32, 32,true,true, dir };
+					drill[k] = Tile{ (i + (k + 8) * dx[dir]) * 32, j * 32, 0, 0, 32, 32,true,true, dir };
 					++k;
 					if (k == drillcount) {
 						break;
@@ -1280,7 +1285,7 @@ void Boss::Update() {
 			dir = (j == 0) ? 2 : 0;
 			for (i = 0; i < W; ++i) {
 				if (MapTiles[i][j] >= drillsuf - 4 && GetRand(1)) {//“®‚­ƒgƒQ
-					drill[k] = Tile{ i * 32, (j + k*dy[dir]) * 32, 0, 0, 32, 32,true,true, dir };
+					drill[k] = Tile{ i * 32, (j + (k + 8)*dy[dir]) * 32, 0, 0, 32, 32,true,true, dir };
 					++k;
 					if (k == drillcount) {
 						break;
@@ -1296,7 +1301,7 @@ void Boss::Update() {
 				for (j = 0; j < H; ++j) {
 					if (MapTiles[i][j] >= 5 && GetRand(1)) {//“®‚­ƒgƒQ
 						int dir = MapTiles[i][j] - 5;
-						drill[k] = Tile{ (i + dx[dir] * k) * 32, (j + dy[dir] * k) * 32, 0, 0, 32, 32,true,true, dir };
+						drill[k] = Tile{ (i + dx[dir] * (k + 8)) * 32, (j + dy[dir] * k) * 32, 0, 0, 32, 32,true,true, dir };
 						++k;
 						if (k == drillcount) {
 							i = W;
@@ -1363,7 +1368,33 @@ void Boss::Draw() {
 
 	// ƒgƒQ‚Ì•`‰æ
 	for (int i = 0; i < drillcount; ++i) {
-		DrawGraph(drill[i].x, drill[i].y, toge[drill[i].dir], TRUE);
+		const int GraphSize = 32;
+		// is•ûŒü‚Æ‹tŒü‚«‚ğ‹‚ß‚é‚½‚ß‚Ì”z—ñ
+		const int ReversedDirectionList[4] = { 2, 3, 0, 1 };
+
+		if (drill[i].x < 0) {
+			// •`‰æˆÊ’u
+			const int DrawX = -drill[i].x / 2;
+	
+			DrawRotaGraph(DrawX + GraphSize / 2, drill[i].y + GraphSize / 2, 0.5, 0.0, toge[ReversedDirectionList[drill[i].dir]], TRUE);
+		} else if (drill[i].x > 640) {
+			// •`‰æˆÊ’u
+			int DrawX = 640 - (drill[i].x - 640) / 2;
+		
+			DrawRotaGraph(DrawX + GraphSize / 2, drill[i].y + GraphSize / 2, 0.5, 0.0, toge[ReversedDirectionList[drill[i].dir]], TRUE);
+		} else if (drill[i].y < 0) {
+			// •`‰æˆÊ’u
+			const int DrawY = -drill[i].y / 2;
+			
+			DrawRotaGraph(drill[i].x + GraphSize / 2, DrawY + GraphSize / 2, 0.5, 0.0, toge[ReversedDirectionList[drill[i].dir]], TRUE);
+		} else if (drill[i].y > 480) {
+			// •`‰æˆÊ’us
+			const int DrawY = 640 - (drill[i].y - 640) / 2;
+		
+			DrawRotaGraph(drill[i].x + GraphSize / 2, DrawY + GraphSize / 2, 0.5, 0.0, toge[ReversedDirectionList[drill[i].dir]], TRUE);
+		} else {
+			DrawGraph(drill[i].x, drill[i].y, toge[drill[i].dir], TRUE);
+		}
 	}
 	// ŒŒ‚µ‚Ô‚«‚ÌƒGƒtƒFƒNƒg‚Ì•`‰æ
 	particle.DrawParticles();
