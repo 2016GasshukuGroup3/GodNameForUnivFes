@@ -714,7 +714,9 @@ STATE game() {
 
 
 		// ”wŒi‚Ì•`‰æ
-		DrawGraph(0, 0, BackImageHandle, FALSE);
+		DrawGraph((timer / 10) % 640, 0, BackImageHandle, FALSE);
+		DrawGraph((timer / 10) % 640 - 640, 0, BackImageHandle, FALSE);
+		
 		for (int i = 0; i < MapTilesHeight; ++i) {
 			for (int j = 0; j < MapTilesWidth; ++j) {
 				if (MapTiles[j][i] == 0) {
