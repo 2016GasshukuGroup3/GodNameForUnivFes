@@ -169,6 +169,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Asset.cpp" />
+    <ClCompile Include="Effects.cpp" />
     <ClCompile Include="Particles.cpp" />
     <ClCompile Include="Lift.cpp" />
     <ClCompile Include="SousaSetsumei.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="BaseUnit.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="DebugHelper.h" />
+    <ClInclude Include="Effects.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Lift.h" />
     <ClInclude Include="MapEditor.h" />

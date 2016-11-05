@@ -1,6 +1,8 @@
 #pragma once
 #include "Particles.h"
 #include "Object.h"
+// 各種エフェクトを使えるようにします。
+#include "Effects.h"
 
 enum STATE {
 	EXIT = -1,
@@ -22,6 +24,10 @@ class Boss : public Rect{
 	Rect p;
 	vector<vector<Rect>> tile;
 
+	static const int MaxAsteroidNum = 20;
+	AsteroidEffect Asteroids[MaxAsteroidNum];
+
+	// 残り時間を取得します。
 	int GetLeftTime() const;
 public:
 	int body, arm, bgm, time,time2;

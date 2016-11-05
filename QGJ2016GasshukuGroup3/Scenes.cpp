@@ -3,6 +3,7 @@
 #include "MapEditor.h"
 #include "Scenes.h"
 #include "Lift.h"
+// グラフィックハンドルなどの管理をする関数を使えるようにします。
 #include "Asset.h"
 #include <complex>
 #include <cmath>
@@ -17,8 +18,9 @@ int KetteiSound;
 
 bool titleflag = false;
 int titleHandle;
+int TitleFlames;
 int GameMode_EasyImage = -1, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
-int PressStartImage;
+int PressStartImage, CloudImage, SkyImage;
 
 int FontHandle;
 // 現在のEasyMode/HardMode選択状況
@@ -33,7 +35,7 @@ enum GameMode {
 
 STATE title() {
 	if (!titleflag) {
-		titleHandle = LoadGraph("Graphic/タイトル画面改良版.png");
+		titleHandle = LoadGraph("Graphic/タイトルキャラ＆タイトル.png");
 		CurrentSelection = GameMode_None;
 
 		//音楽のための変数と読み込み
@@ -55,6 +57,9 @@ STATE title() {
 
 		// 一度だけ初期化
 		if (GameMode_EasyImage == -1) {
+			SkyImage = LoadGraph("Graphic/タイトル空.png");
+			CloudImage = LoadGraph("Graphic/タイトル雲.png");
+
 			GameMode_EasyImage = LoadGraph("Graphic/イージーモード.png");
 			GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
 			GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
@@ -68,6 +73,7 @@ STATE title() {
 		// 作成したデータの識別番号を変数 FontHandle に保存する
 		FontHandle = CreateFontToHandle(NULL, 40, 3, DX_FONTTYPE_ANTIALIASING);
 		titleflag = true;
+		TitleFlames = 0;
 	}
 	else {
 		if (CurrentSelection == GameMode_None) {
@@ -78,12 +84,12 @@ STATE title() {
 		} else {
 			// キーの入力待ち
 			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
-			// 作成したフォントデータを削除する
-			DeleteFontToHandle(FontHandle);
-				// StopSoundMem(Sound1);
-			PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
-			return SETSUMEI;
-		}
+				// 作成したフォントデータを削除する
+				DeleteFontToHandle(FontHandle);
+					// StopSoundMem(Sound1);
+				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
+				return SETSUMEI;
+			}
 
 			if (getKeyPress(KEY_INPUT_UP, PRESS_ONCE) || getKeyPress(KEY_INPUT_DOWN, PRESS_ONCE)) {
 				if (CurrentSelection == GameMode_Easy) {
@@ -98,12 +104,15 @@ STATE title() {
 			}
 		}
 
+		TitleFlames++;
+
 		//タイトル描画
 
 
 		// 読みこんだグラフィックを画面左上に描画
+		DrawGraph(0, 0, SkyImage, TRUE);
+		DrawRotaGraph(320, -100, 1.0, TitleFlames / 180.0, CloudImage, TRUE);
 		DrawGraph(0, 0, titleHandle, TRUE);
-
 
 		if (CurrentSelection != GameMode_None) {
 			if (CurrentSelection == GameMode_Easy) {
@@ -386,18 +395,23 @@ void Initialization(int map, MapViewer &mv) {
 }
 
 
-void DrawNumber(int x, int y, int Number) {
+void DrawNumber(int x, int y, int Number, int Images[] = NumberImages) {
 	int TempNum = Number;
 	int Counter = 0;
 	bool Appeared = false;
 
+	// 一文字の幅と高さ
+	int TextWidth, TextHeight;
+	GetGraphSize(Images[0], &TextWidth, &TextHeight);
+
+	// 大きい位の値（千万の位）から順番に描画していく
 	for (int i = 10000000; i >= 1; i /= 10) {
 		int RankNum = TempNum / i;
 
 		if (!(RankNum == 0 && !Appeared) || i == 1) {
 			Appeared = true;
-			DrawGraph(x + 20 * Counter, y, NumberImages[RankNum], TRUE);
-}
+			DrawGraph(x + (TextWidth + 4) * Counter, y, Images[RankNum], TRUE);
+		}
 
 		Counter++;
 		TempNum -= i * RankNum;
@@ -977,6 +991,15 @@ void Boss::Init() {
 	tile[x][y].SetPattern(0, 0);
 	tile[x][y].kind = 0;
 	MapTiles[x][y] = 0;
+
+	// 隕石のエフェクトの初期化
+	for (auto& Asteroid : Asteroids) {
+		InitializeAsteroidEffect(&Asteroid);
+	}
+	// これは、次のように書くのと同じ。
+	// for (int i = 0; i < MaxAsteroidNum; i++) {
+	//		InitializeAsteroidEffect(&Asteroids[i]);
+	// }
 }
 
 int ThrowSound = -1;
@@ -1003,6 +1026,83 @@ void SetLift(int x, int y) {
 			Item.MyPattern = Lift::Fall;
 			Item.IsEnabled = true;
 			break;
+		}
+	}
+}
+
+/// <summary>隕石のエフェクトを登場させます。</summary>
+/// <param name="Effects">隕石のエフェクトの配列</param>
+/// <param name="EffectsNum">隕石のエフェクトの配列の要素数</param>
+/// <param name="SpawnNum">登場させる隕石のエフェクトの数。何も指定しなければ、5が指定されます。</param>
+/// <remarks>
+/// 隕石の登場位置は関数内部でランダムに決められます。
+/// 使用例:
+/// <code>
+/// const int AsteroidEffectNum = 20;
+/// AsteroidEffect Effects[AsteroidEffectNum];
+///
+/// SpawnAsteroidEffect(Effects, AsteroidEffectNum);
+/// </code>
+/// </remarks>
+void SpawnAsteroidEffect(AsteroidEffect Effects[], int EffectNum, int SpawnNum = 5) {
+	// エフェクトの配列を一つずつ確認して、使っていないものを探す。
+	for (int i = 0, SpawnCounter = 0; i < EffectNum && SpawnCounter < SpawnNum; i++) {
+		if (!Effects[i].IsEnabled) {
+			// 使ってないエフェクトに対して適当に初期化する。
+			Effects[i].x = 50 + GetRand(64) * 10;
+			Effects[i].y = -100 - GetRand(10) * 10;
+			Effects[i].dx = -1;
+			Effects[i].dy = 2;
+			Effects[i].IsEnabled = true;
+			SpawnCounter++;
+		}
+	}
+}
+
+/// <summary>登場している隕石のエフェクトを更新します。</summary>
+/// <param name="Effects">隕石のエフェクトの配列</param>
+/// <param name="EffectsNum">隕石のエフェクトの配列の要素数</param>
+/// <remarks>
+/// 使用例:
+/// <code>
+/// const int AsteroidEffectNum = 20;
+/// AsteroidEffect Effects[AsteroidEffectNum];
+///
+/// UpdateAsteroidEffect(Effects, AsteroidEffectNum);
+/// </code>
+/// </remarks>
+void UpdateAsteroidEffect(AsteroidEffect Effects[], int EffectNum) {
+	for (int i = 0; i < EffectNum; i++) {
+		if (Effects[i].IsEnabled) {
+			// エフェクトの表示位置を更新
+			Effects[i].x += Effects[i].dx;
+			Effects[i].y += Effects[i].dy;
+
+			// 画面外に行ったエフェクトを無効化する。
+			if (Effects[i].y > 480 + 50) {
+				Effects[i].IsEnabled = false;
+			}
+		}
+	}
+}
+
+/// <summary>登場している隕石のエフェクトを描画します。</summary>
+/// <param name="Effects">隕石のエフェクトの配列</param>
+/// <param name="EffectsNum">隕石のエフェクトの配列の要素数</param>
+/// <remarks>
+/// 使用例:
+/// <code>
+/// const int AsteroidEffectNum = 20;
+/// AsteroidEffect Effects[AsteroidEffectNum];
+///
+/// DrawAsteroidEffect(Effects, AsteroidEffectNum);
+/// </code>
+/// </remarks>
+void DrawAsteroidEffect(AsteroidEffect Effects[], int EffectNum) {
+	for (int i = 0; i < EffectNum; i++) {
+		if (Effects[i].IsEnabled) {
+			// エフェクトを描画
+			DrawAsteroidEffect(&Effects[i]);
 		}
 	}
 }
@@ -1209,7 +1309,13 @@ void Boss::Update() {
 			break;
 		}
 		--hp;
+
+		// 隕石のエフェクトを登場させる
+		SpawnAsteroidEffect(Asteroids, MaxAsteroidNum, 10);
 	}
+
+	// 隕石のエフェクトを更新する
+	UpdateAsteroidEffect(Asteroids, MaxAsteroidNum);
 }
 
 void Boss::Draw() {
@@ -1239,7 +1345,10 @@ void Boss::Draw() {
 	DrawGraph(0, 0, body, TRUE);
 	// 死亡回数の表示
 	//DrawFormatString(500, 40, blue, "%d", player.deathcount2);
-
+	
+	// 隕石のエフェクトの描画
+	DrawAsteroidEffect(Asteroids, MaxAsteroidNum);
+	
 	// プレイヤーの描画
 	if ((player.InvulnerableTime / 3) % 2 == 0) {
 		if (player.FaceDirection == Player::Direction::Direction_Left) {
@@ -1357,6 +1466,10 @@ STATE boss() {
 bool resultflag = false;
 int resultHandle;
 int FontHandle2;
+// 死亡回数を表示するための数字
+int DeathCountNumberImages[10] = { -1 };
+// クリア時間を表示するための数字
+int ClearTimeNumberImages[10] = { -1 };
 
 STATE result() {
 	if (!resultflag) {
@@ -1364,6 +1477,12 @@ STATE result() {
 		AddGraphicHandle("リザルト画面スコア", "Graphic/リザルト画面スコア.png");
 		FontHandle = CreateFontToHandle(NULL, 40, 3, DX_FONTTYPE_ANTIALIASING);
 		FontHandle2 = CreateFontToHandle(NULL, 30, 3, DX_FONTTYPE_ANTIALIASING);
+
+		if (DeathCountNumberImages[0] == -1) {
+			LoadDivGraph("Graphic/死亡回数リザルト数字.png", 10, 10, 1, 32, 36, DeathCountNumberImages);
+			LoadDivGraph("Graphic/秒数リザルト数字.png", 10, 10, 1, 32, 36, ClearTimeNumberImages);
+		}
+
 		resultflag = true;
 	}
 	else {
@@ -1371,8 +1490,8 @@ STATE result() {
 		DrawGraph(15, 258, GetHandle("リザルト画面スコア"), TRUE);
 		//DrawFormatStringToHandle(50, 300, GetColor(0, 255, 0), FontHandle, "死亡回数 %3d回\n", player.deathcount2);
 		//DrawFormatStringToHandle(50, 350, GetColor(0, 255, 0), FontHandle, "クリア時間 %3.1f秒\n", (double)timer / 60);
-		DrawNumber(185, 308, player.deathcount2);
-		DrawNumber(185, 368, timer / 60);
+		DrawNumber(75, 308, player.deathcount2, DeathCountNumberImages);
+		DrawNumber(75, 368, timer / 60, ClearTimeNumberImages);
 
 		// DrawStringToHandle(100, 400, "PRESS SPACE", GetColor(0, 0, 255), FontHandle2);
 		// ▼ よくわからない処理なのでコメントアウトさせてもらいました
