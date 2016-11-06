@@ -47,9 +47,10 @@ class MapFragment{
 private:
 	string filePath;
 	int drawH, x, y, width, height;
-	int attribute;
+	int attribute, TileType;
 public:
 	MapFragment();
+	MapFragment(int, int, int, int, string);
 	MapFragment(int,int,int,string);
 	void Update();
 	void Draw();
@@ -57,6 +58,7 @@ public:
 	bool LoadFail();
 	bool InMouseClick();
 	int GetAttribute();
+	int GetTileType();
 	Pos GetPos();
 };
 
@@ -82,6 +84,7 @@ public:
 	int GetSelect();
 	int GetSelectAttribute();
 	void SetTileKind(vector<vector<int>>&);
+	void SetTileAttribute(vector<vector<int>>&);
 	Pos GetSelectPos();
 	Pos FindStartPos();
 	Pos FindEndPos();

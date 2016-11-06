@@ -80,6 +80,7 @@ STATE title() {
 		// キーの入力待ち
 		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 				CurrentSelection = GameMode_Easy;
+				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
 			}
 		} else {
 			// キーの入力待ち
@@ -123,7 +124,7 @@ STATE title() {
 				DrawGraph(300, 340, GameMode_HardSelectedImage, TRUE);
 			}
 		} else {
-			DrawGraph(200, 400, PressStartImage, TRUE);
+			DrawGraph(180, 400, PressStartImage, TRUE);
 			// DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
 		//ScreenFlip();//描画の反映
 	}
@@ -172,7 +173,7 @@ Player player;
 bool Player::OnCollideFromSide(int& tileid, int i, int j) {
 	x = 0;
 
-	if (tileid == 3) {
+	if (tileid == 3 || tileid == 4) {
 		return true;
 	}
 
@@ -195,7 +196,7 @@ bool Player::OnCollideFromSide(int& tileid, int i, int j) {
 }
 
 bool Player::OnCollideFromBottom(int& tileid, int i, int j) {
-	if (tileid == 3) {
+	if (tileid == 3 || tileid == 4) {
 		return true;
 	}
 
@@ -254,7 +255,8 @@ struct Tile {
 	bool flag, flag2;
 	int dir;
 };
-const int TILE_MAX = 20;
+const int TILE_MAX = 40;
+Tile normalfloor[TILE_MAX];
 Tile ball[TILE_MAX];
 Tile bridge[TILE_MAX];
 Tile drill[TILE_MAX];
@@ -263,6 +265,7 @@ Lift Lifts[TILE_MAX];
 
 int stagenum = 1;
 
+static int normalfloorcount = 0;
 static int ballcount = 0;
 static int bcount = 0;
 static int drillcount = 0;
@@ -364,8 +367,8 @@ void moveBridge(Tile *b) {
 }
 
 bool gameflag = false;
-int BackImageHandle[5] = { -1 }, jimen, toge[4], hasi, ballHandle;
-int NumberImages[10], StageImage, TimeImage, MinImage, SecImage, DeathCountImage;
+int BackImageHandle[5] = { -1 }, jimen, toge[4], hasi, ballHandle, InvisibleBlockImage;
+int NumberImages[10], StageImage, TimeImage, MinImage, SecImage, DeathCountImage, ExtendedTimeImage;
 int JumpSound, KilledSound;
 int timer;
 int PlayerImageHandles[3];
@@ -456,9 +459,11 @@ STATE game() {
 			MinImage = LoadGraph("Graphic/MIN.png");
 			SecImage = LoadGraph("Graphic/SEC.png");
 			DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
+			ExtendedTimeImage = LoadGraph("Graphic/延長中.png");
 
 		jimen = LoadGraph("Graphic/Jimen.png");
 		hasi = LoadGraph("Graphic/Hasi.png");
+		InvisibleBlockImage = LoadGraph("Graphic/Kakusi_block.png");
 		for (int i = 0; i < 4; ++i) {
 			toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
 		}
@@ -500,7 +505,13 @@ STATE game() {
 				MapTiles[j][i] = tmp[i][j];
 			}
 		}
+
+		// 面倒なので、tmp を再利用（本当は、一つの変数を２つ以上の違う用途に使ってはいけない。）
+		// マップエディタでのタイルごとの属性値を取得する。
+		mv.SetTileAttribute(tmp);
+
 		//Ballのセット
+		normalfloorcount = 0;
 		ballcount = 0;
 		bcount = 0;
 		drillcount = 0;
@@ -508,7 +519,12 @@ STATE game() {
 		//Bridgeのセット（落ちる方）
 		for (int i = 0; i < MapTilesHeight; ++i) {
 			for (int j = 0; j < MapTilesWidth; ++j) {
-				if (MapTiles[j][i] == 1) {
+				// マップエディタでのタイルごとの属性値が 0ならば、通常の初期化を行う。
+				
+				if (MapTiles[j][i] == 0) {
+					normalfloor[normalfloorcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32 };
+					++normalfloorcount;
+				} else if (MapTiles[j][i] == 1) {
 					bridge[bcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true };
 					++bcount;
 				}
@@ -531,6 +547,11 @@ STATE game() {
 				else if (MapTiles[j][i] >= drillsuf) {//動くトゲ
 					drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf };
 					++drillcount;
+				}
+				
+				// マップエディタでのタイルごとの属性値が 1ならば、MapTiles によるあたり判定を無効化。
+				if (tmp[i][j] == 1) {
+					MapTiles[j][i] = -1;
 				}
 			}
 		}
@@ -683,13 +704,24 @@ STATE game() {
 					MapTiles[j][i] = tmp[i][j];
 				}
 			}
+			// 面倒なので、tmp を再利用（本当は、一つの変数を２つ以上の違う用途に使ってはいけない。）
+			// マップエディタでのタイルごとの属性値を取得する。
+			mv.SetTileAttribute(tmp);
+
+			normalfloorcount = 0;
 			ballcount = 0;
 			bcount = 0;
 			drillcount = 0;
 			inviscount = 0;
 			for (int i = 0; i < MapTilesHeight; ++i) {
 				for (int j = 0; j < MapTilesWidth; ++j) {
-					if (MapTiles[j][i] == 1) {
+					// マップエディタでのタイルごとの属性値が 0ならば、通常の初期化を行う。
+
+					if (MapTiles[j][i] == 0) {
+						normalfloor[normalfloorcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32 };
+						++normalfloorcount;
+					}
+					else if (MapTiles[j][i] == 1) {
 						bridge[bcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true };
 						++bcount;
 					}
@@ -713,6 +745,11 @@ STATE game() {
 						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf };
 						++drillcount;
 					}
+
+					// マップエディタでのタイルごとの属性値が 1ならば、MapTiles によるあたり判定を無効化。
+					if (tmp[i][j] == 1) {
+						MapTiles[j][i] = -1;
+					}
 				}
 			}
 		}
@@ -721,14 +758,27 @@ STATE game() {
 		// 背景の描画
 		DrawGraph((timer / 10) % 640, 0, BackImageHandle[stagenum - 1], FALSE);
 		DrawGraph((timer / 10) % 640 - 640, 0, BackImageHandle[stagenum - 1], FALSE);
-		
-		for (int i = 0; i < MapTilesHeight; ++i) {
-			for (int j = 0; j < MapTilesWidth; ++j) {
-				if (MapTiles[j][i] == 0) {
-					DrawGraph(j * 32, i * 32, jimen, TRUE);
-				}
-			}
+
+		if (player.FaceDirection == Player::Direction::Direction_Left) {
+			DrawTurnGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
 		}
+		else {
+			DrawGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
+		}
+		
+		//for (int i = 0; i < MapTilesHeight; ++i) {
+		//	for (int j = 0; j < MapTilesWidth; ++j) {
+		//		if (MapTiles[j][i] == 0) {
+		//			DrawGraph(j * 32, i * 32, jimen, TRUE);
+		//		}
+		//	}
+		//}
+
+		// 普通の床を描画
+		for (int i = 0; i < normalfloorcount; ++i) {
+			DrawGraph(normalfloor[i].x, normalfloor[i].y, jimen, TRUE);
+		}
+
 		//落ちてくる球
 		for (int i = 0; i < ballcount; ++i) {
 			//if (ball[i].flag)
@@ -751,7 +801,7 @@ STATE game() {
 		}
 		for (int i = 0; i < inviscount; ++i) {
 			if (invis[i].flag)
-				DrawGraph(invis[i].x, invis[i].y, jimen, TRUE);
+				DrawGraph(invis[i].x, invis[i].y, InvisibleBlockImage, TRUE);
 		}
 
 		for (int index = 0; index < LiftCount; index++) {
@@ -767,17 +817,13 @@ STATE game() {
 			//}
 		}
 
-		if (player.FaceDirection == Player::Direction::Direction_Left) {
-			DrawTurnGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
-		}
-		else {
-			DrawGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
-		}
-
-
 		// 黒色の値を取得
 		unsigned Cr;
 		Cr = GetColor(0, 0, 0);
+
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 64);
+		DrawBox(355, 0, 640, 100, Cr, TRUE);
+		SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
 
 		//死亡回数、ステージ、残り時間の表示
 		// DrawFormatString(500, 0, Cr, "Death Count %d", player.deathcount1);
@@ -786,11 +832,19 @@ STATE game() {
 		// DrawFormatString(500, 20, Cr, "Stage %d", stagenum);
 		DrawGraph(365, 30, StageImage, TRUE);
 		DrawNumber(470, 30, stagenum);
-		// DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
-		DrawGraph(450, 60, MinImage, TRUE);
-		DrawNumber(280, 60, (180 - timer / 60) / 60);
-		DrawGraph(570, 60, SecImage, TRUE);
-		DrawNumber(410, 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+
+		// 制限時間内なら、普通に残り時間を描画
+		if (timer / 60 >= 0 && timer / 60 <= 180) {
+			// DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+			DrawGraph(450, 60, MinImage, TRUE);
+			DrawNumber(280, 60, (180 - timer / 60) / 60);
+			DrawGraph(570, 60, SecImage, TRUE);
+			DrawNumber(410, 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+		} // 制限時間を過ぎたら（＝延長期間）、延長中の文字を描画
+		else {
+			DrawGraph(450, 60, ExtendedTimeImage, TRUE);
+		}
+
 		if (timer / 60 > 170) {
 			if(timer/60<181)
 			DrawRotaGraph(320, 240, 5, 0, NumberImages[180-timer/60], TRUE, FALSE);
@@ -814,12 +868,22 @@ STATE game() {
 					MapTiles[j][i] = tmp[i][j];
 				}
 			}
+			// 面倒なので、tmp を再利用（本当は、一つの変数を２つ以上の違う用途に使ってはいけない。）
+			// マップエディタでのタイルごとの属性値を取得する。
+			mv.SetTileAttribute(tmp);
+			normalfloorcount = 0;
 			ballcount = 0;
 			bcount = 0;
 			drillcount = 0;
 			for (int i = 0; i < MapTilesHeight; ++i) {
 				for (int j = 0; j < MapTilesWidth; ++j) {
-					if (MapTiles[j][i] == 1) {
+					// マップエディタでのタイルごとの属性値が 0ならば、通常の初期化を行う。
+
+					if (MapTiles[j][i] == 0) {
+						normalfloor[normalfloorcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32 };
+						++normalfloorcount;
+					}
+					else if (MapTiles[j][i] == 1) {
 						bridge[bcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true };
 						++bcount;
 					}
@@ -832,7 +896,7 @@ STATE game() {
 						++ballcount;
 					}
 					else if (MapTiles[j][i] == 4) {
-						invis[inviscount] = Tile{ j * 32,i * 32,0,0,32,32,false };
+						invis[inviscount] = Tile{ j * 32,i * 32,0,0,32,36,false };
 						++inviscount;
 					}
 					else if (drillsuf - 4 <= MapTiles[j][i] && MapTiles[j][i] < drillsuf) {
@@ -842,6 +906,11 @@ STATE game() {
 					else if (MapTiles[j][i] >= drillsuf) {//動くトゲ
 						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf };
 						++drillcount;
+					}
+
+					// マップエディタでのタイルごとの属性値が 1ならば、MapTiles によるあたり判定を無効化。
+					if (tmp[i][j] == 1) {
+						MapTiles[j][i] = -1;
 					}
 				}
 			}
