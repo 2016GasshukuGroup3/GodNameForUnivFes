@@ -253,9 +253,10 @@ bool Player::OnCollideFromTop(int& tileid, int i, int j) {
 struct Tile {
 	int x, y, dx, dy, width, height;
 	bool flag, flag2;
-	int dir;
+	// dir:実際の移動方向, NeedleDirection:描画時の針の向き（トゲに対して有効）
+	int dir, NeedleDirection;
 };
-const int TILE_MAX = 40;
+const int TILE_MAX = 80;
 Tile normalfloor[TILE_MAX];
 Tile ball[TILE_MAX];
 Tile bridge[TILE_MAX];
@@ -541,11 +542,16 @@ STATE game() {
 					++inviscount;
 				}
 				else if (drillsuf - 4 <= MapTiles[j][i] && MapTiles[j][i] < drillsuf) {
-					drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,false,true, MapTiles[j][i] - (drillsuf - 4) };
+					drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,false,true, MapTiles[j][i] - (drillsuf - 4), MapTiles[j][i] - (drillsuf - 4) };
 					++drillcount;
 				}
 				else if (MapTiles[j][i] >= drillsuf) {//動くトゲ
-					drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf };
+					if (tmp[i][j] == 0) {
+						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf, MapTiles[j][i] - drillsuf };
+					} else if (tmp[i][j] >= 1 && tmp[i][j] <= 5) {
+						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, tmp[i][j] - 1, MapTiles[j][i] - drillsuf };
+					}
+
 					++drillcount;
 				}
 				
@@ -738,11 +744,16 @@ STATE game() {
 						++inviscount;
 					}
 					else if (drillsuf - 4 <= MapTiles[j][i] && MapTiles[j][i] < drillsuf) {
-						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,false,true, MapTiles[j][i] - (drillsuf - 4) };
+						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,false,true, MapTiles[j][i] - (drillsuf - 4), MapTiles[j][i] - (drillsuf - 4) };
 						++drillcount;
 					}
 					else if (MapTiles[j][i] >= drillsuf) {//動くトゲ
-						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf };
+						if (tmp[i][j] == 0) {
+							drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf, MapTiles[j][i] - drillsuf };
+						}
+						else if (tmp[i][j] >= 1 && tmp[i][j] <= 5) {
+							drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, tmp[i][j] - 1, MapTiles[j][i] - drillsuf };
+						}
 						++drillcount;
 					}
 
@@ -797,7 +808,7 @@ STATE game() {
 			}
 		}
 		for (int i = 0; i < drillcount; ++i) {
-			DrawGraph(drill[i].x, drill[i].y, toge[drill[i].dir], TRUE);
+			DrawGraph(drill[i].x, drill[i].y, toge[drill[i].NeedleDirection], TRUE);
 		}
 		for (int i = 0; i < inviscount; ++i) {
 			if (invis[i].flag)
@@ -875,6 +886,8 @@ STATE game() {
 			ballcount = 0;
 			bcount = 0;
 			drillcount = 0;
+			inviscount = 0;
+
 			for (int i = 0; i < MapTilesHeight; ++i) {
 				for (int j = 0; j < MapTilesWidth; ++j) {
 					// マップエディタでのタイルごとの属性値が 0ならば、通常の初期化を行う。
@@ -900,11 +913,17 @@ STATE game() {
 						++inviscount;
 					}
 					else if (drillsuf - 4 <= MapTiles[j][i] && MapTiles[j][i] < drillsuf) {
-						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,false,true, MapTiles[j][i] - (drillsuf - 4) };
+						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,false,true, MapTiles[j][i] - (drillsuf - 4), MapTiles[j][i] - (drillsuf - 4) };
 						++drillcount;
 					}
 					else if (MapTiles[j][i] >= drillsuf) {//動くトゲ
-						drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf };
+						if (tmp[i][j] == 0) {
+							drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, MapTiles[j][i] - drillsuf, MapTiles[j][i] - drillsuf };
+						}
+						else if (tmp[i][j] >= 1 && tmp[i][j] <= 5) {
+							drill[drillcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32,true,true, tmp[i][j] - 1, MapTiles[j][i] - drillsuf };
+						}
+
 						++drillcount;
 					}
 
