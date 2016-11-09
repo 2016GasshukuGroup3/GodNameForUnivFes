@@ -1,6 +1,7 @@
 #include "Lift.h"
 #include "DxLib.h"
 #include "Particles.h"
+#include "Asset.h"
 #include <cmath>
 #include <assert.h>
 
@@ -13,18 +14,29 @@ Lift::Lift() :
 
 void Lift::Initialize() {
 	if (GraphHandle != -1) {
-		DeleteGraph(GraphHandle);
+		int GraphWidth, GraphHeight;
+		GetGraphSize(GraphHandle, &GraphWidth, &GraphHeight);
+
+		if (GraphWidth != CurrentWidth * 32) {
+			DeleteGraph(GraphHandle);
+			GraphHandle = -1;
+		}
 	}	
 
-	GraphHandle = MakeScreen(32 * CurrentWidth, 32);
-	int TempGraph = LoadGraph("Graphic/Jimen.png");
-	SetDrawScreen(GraphHandle);
+	if (GraphHandle == -1) {
+		GraphHandle = MakeScreen(32 * CurrentWidth, 32);
+		// int TempGraph = LoadGraph("Graphic/Jimen.png");
+		AddGraphicHandle("Jimen", "Graphic/Jimen.png");
+		int TempGraph = GetHandle("Jimen");
 
-	for (int i = 0; i < CurrentWidth; i++) {
-		assert(DrawGraph(32 * i, 0, TempGraph, FALSE) == 0 || TempGraph == -1);
+		SetDrawScreen(GraphHandle);
+
+		for (int i = 0; i < CurrentWidth; i++) {
+			assert(DrawGraph(32 * i, 0, TempGraph, FALSE) == 0 || TempGraph == -1);
+		}
+		// DeleteGraph(TempGraph);
+		SetDrawScreen(DX_SCREEN_BACK);
 	}
-	DeleteGraph(TempGraph);
-	SetDrawScreen(DX_SCREEN_BACK);
 }
 
 void Lift::Reset() {

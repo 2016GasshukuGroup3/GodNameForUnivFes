@@ -37,11 +37,13 @@ public:
 	}
 
 	void SetWidth(int width) {
-		MyMap.Fill(-1);
-		CurrentWidth = width;
+		if (CurrentWidth != width) {
+			MyMap.Fill(-1);
+			CurrentWidth = width;
 
-		for (int i = 20; i < 20 + width; i++) {
-			MyMap[i][25] = 0;
+			for (int i = 20; i < 20 + width; i++) {
+				MyMap[i][25] = 0;
+			}
 		}
 	}
 
