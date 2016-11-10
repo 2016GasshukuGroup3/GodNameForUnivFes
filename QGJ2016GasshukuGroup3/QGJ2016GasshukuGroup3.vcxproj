@@ -172,6 +172,7 @@
     <ClCompile Include="Effects.cpp" />
     <ClCompile Include="Particles.cpp" />
     <ClCompile Include="Lift.cpp" />
+    <ClCompile Include="Ranking.cpp" />
     <ClCompile Include="SousaSetsumei.cpp" />
     <ClCompile Include="title.cpp" />
     <ClCompile Include="Input.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="MemberCheck.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Particles.h" />
+    <ClInclude Include="Ranking.h" />
     <ClInclude Include="Scenes.h" />
     <ClInclude Include="Shape.h" />
   </ItemGroup>

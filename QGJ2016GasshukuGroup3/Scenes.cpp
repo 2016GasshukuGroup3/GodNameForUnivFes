@@ -1592,6 +1592,8 @@ int DeathCountNumberImages[10] = { -1 };
 // クリア時間を表示するための数字
 int ClearTimeNumberImages[10] = { -1 };
 
+#include "Ranking.h"
+
 STATE result() {
 	if (!resultflag) {
 		resultHandle = LoadGraph("Graphic/リザルト画面.png");
@@ -1603,6 +1605,8 @@ STATE result() {
 			LoadDivGraph("Graphic/死亡回数リザルト数字.png", 10, 10, 1, 32, 36, DeathCountNumberImages);
 			LoadDivGraph("Graphic/秒数リザルト数字.png", 10, 10, 1, 32, 36, ClearTimeNumberImages);
 		}
+
+		RegisterRanking("", player.deathcount2, timer / 60);
 
 		resultflag = true;
 	}
