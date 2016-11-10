@@ -31,7 +31,7 @@ int SetRankingData(RankingData Data[], std::size_t IndexList[], int DataNum, con
 
 	for (int i = 0; i < DataNum; i++) {
 		const RankingData& CurrentData = Data[IndexList[i]];
-		fprintf(FilePointer, "%d, %d, %s\n", CurrentData.DeathCount, CurrentData.ClearTime, CurrentData.Name);
+		fprintf(FilePointer, "%d,%d,%s\n", CurrentData.DeathCount, CurrentData.ClearTime, CurrentData.Name);
 	}
 
 	fclose(FilePointer);
@@ -52,9 +52,9 @@ int RegisterRankingInternal(const char Name[], int DeathCount, int ClearTime, Pr
 	// ランキングの情報の数
 	int DataNum = GetRankingData(Data, MaxScoreNum, RankPath);
 
-	// エラーが発生していれば何もしない
+	// エラーが発生していれば新規作成の準備
 	if (DataNum == -1) {
-		return -1;
+		DataNum = 0;
 	}
 
 	// 新しいランキングデータを格納するための変数への参照
@@ -84,10 +84,10 @@ int RegisterRankingInternal(const char Name[], int DeathCount, int ClearTime, Pr
 	// 完成したランキングデータを保存する。
 	SetRankingData(Data, RankingIndex, DataNum + 1, RankPath);
 
-	return 0;
+	return RankingIndex[DataNum] + 1;
 }
 
-int RegisterRanking(const char Name[], int DeathCount, int ClearTime) {
+int RegisterDeathCountRanking(const char Name[], int DeathCount, int ClearTime, const char RankPath[]) {
 
 	/// <summary>死亡回数でソートするための述語関数オブジェクト</summary>
 	class DeathCountComparar {
@@ -107,6 +107,12 @@ int RegisterRanking(const char Name[], int DeathCount, int ClearTime) {
 			}
 		}
 	};
+
+	// 死亡回数ランキングを更新
+	return RegisterRankingInternal(Name, DeathCount, ClearTime, DeathCountComparar(), RankPath);
+}
+
+int RegisterClearTimeRanking(const char Name[], int DeathCount, int ClearTime, const char RankPath[]) {
 
 	/// <summary>クリア時間でソートするための述語関数オブジェクト</summary>
 	class ClearTimeComparar {
@@ -128,17 +134,8 @@ int RegisterRanking(const char Name[], int DeathCount, int ClearTime) {
 		}
 	};
 
-	// 死亡回数ランキングを更新
-	int RetVal1 = RegisterRankingInternal(Name, DeathCount, ClearTime, DeathCountComparar(), "Data/DeathCountRankPath.txt");
 	// クリア時間ランキングを更新
-	int RetVal2 = RegisterRankingInternal(Name, DeathCount, ClearTime, ClearTimeComparar(), "Data/ClearTimeRankPath.txt");
-
-	// もし一方でもエラーが発生していれば -1 を戻り値としてセット
-	if (RetVal1 == -1 || RetVal2 == -1) {
-		return -1;
-	} else {
-		return 0;
-	}
+	return RegisterRankingInternal(Name, DeathCount, ClearTime, ClearTimeComparar(), RankPath);
 }
 
 int GetRankingData(RankingData Data[], int DataNum, const char RankPath[]) {
@@ -172,7 +169,7 @@ int GetRankingData(RankingData Data[], int DataNum, const char RankPath[]) {
 		strcpy_s(Data[i].Name, _countof(Data[i].Name), "");
 
 		// もし、それ以上読み込めなかったらそこで読み込みを打ち切る。
-		if (fscanf_s(FilePointer, "%d, %d, %s", &Data[i].DeathCount, &Data[i].ClearTime, Data[i].Name, _countof(Data[i].Name)) == EOF) {
+		if (fscanf_s(FilePointer, "%d,%d,%[^\n]", &Data[i].DeathCount, &Data[i].ClearTime, Data[i].Name, _countof(Data[i].Name)) == EOF) {
 			break;
 		};
 		ScoreNum++;

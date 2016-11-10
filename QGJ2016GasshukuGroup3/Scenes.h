@@ -11,7 +11,8 @@ enum STATE {
 	BOSS,
 	RESULT,
 	GAMEOVER,
-	SETSUMEI
+	SETSUMEI,
+	RANKING
 };
 
 class Boss : public Rect{
@@ -45,3 +46,11 @@ STATE boss();
 STATE result();
 STATE gameover();
 STATE setsumei();
+STATE ranking();
+
+/// <summary>指定した座標に数字を描画します。</summary>
+/// <param name="x">数字を描画する原点のx座標</param>
+/// <param name="y">数字を描画する原点のy座標</param>
+/// <param name="Number">描画する数字</param>
+/// <param name="Images">描画する時に使う数字のグラフィック</param>
+void DrawNumber(int x, int y, int Number, int Images[]);

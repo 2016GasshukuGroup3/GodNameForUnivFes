@@ -18,7 +18,7 @@ int KetteiSound;
 
 bool titleflag = false;
 int titleHandle;
-int TitleFlames;
+int TitleFlames, TitleNoControlFlames;
 int GameMode_EasyImage = -1, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
 int PressStartImage, CloudImage, SkyImage;
 
@@ -60,9 +60,12 @@ STATE title() {
 			SkyImage = LoadGraph("Graphic/タイトル空.png");
 			CloudImage = LoadGraph("Graphic/タイトル雲.png");
 
-			GameMode_EasyImage = LoadGraph("Graphic/イージーモード.png");
+			AddGraphicHandle("イージーモード", "Graphic/イージーモード.png");
+			GameMode_EasyImage = GetHandle("イージーモード"); // LoadGraph("Graphic/イージーモード.png");
 			GameMode_EasySelectedImage = LoadGraph("Graphic/イージーモード選択中.png");
-			GameMode_HardImage = LoadGraph("Graphic/ハードモード.png");
+
+			AddGraphicHandle("ハードモード", "Graphic/ハードモード.png");
+			GameMode_HardImage = GetHandle("ハードモード"); // LoadGraph("Graphic/ハードモード.png");
 			GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
 
 			PressStartImage = LoadGraph("Graphic/PRESS_START.png");
@@ -74,16 +77,24 @@ STATE title() {
 		FontHandle = CreateFontToHandle(NULL, 40, 3, DX_FONTTYPE_ANTIALIASING);
 		titleflag = true;
 		TitleFlames = 0;
+		TitleNoControlFlames = 0;
 	}
 	else {
 		if (CurrentSelection == GameMode_None) {
 			// キーの入力待ち
 			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+				TitleNoControlFlames = 0;
 				CurrentSelection = GameMode_Easy;
 				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
+			} else {
+				TitleNoControlFlames++;
+
+				if (TitleNoControlFlames > 60 * 10) {
+					TitleNoControlFlames = 0;
+					return RANKING;
+				}
 			}
-		}
-		else {
+		} else {
 			// キーの入力待ち
 			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 				// 作成したフォントデータを削除する
@@ -403,8 +414,8 @@ void Initialization(int map, MapViewer &mv) {
 }
 
 
-void DrawNumber(int x, int y, int Number, int Images[] = NumberImages) {
-	int TempNum = Number;
+void DrawNumber(int x, int y, int Number, int Images[]) {
+	int TempNum = Number > 0 ? Number : 0;
 	int Counter = 0;
 	bool Appeared = false;
 
@@ -846,18 +857,18 @@ STATE game() {
 		//死亡回数、ステージ、残り時間の表示
 		// DrawFormatString(500, 0, Cr, "Death Count %d", player.deathcount1);
 		DrawGraph(360, 0, DeathCountImage, TRUE);
-		DrawNumber(470, 0, player.deathcount1);
+		DrawNumber(470, 0, player.deathcount1, NumberImages);
 		// DrawFormatString(500, 20, Cr, "Stage %d", stagenum);
 		DrawGraph(365, 30, StageImage, TRUE);
-		DrawNumber(470, 30, stagenum);
+		DrawNumber(470, 30, stagenum, NumberImages);
 
 		// 制限時間内なら、普通に残り時間を描画
 		if (timer / 60 >= 0 && timer / 60 <= 180) {
 			// DrawFormatString(500, 40, Cr, "time %dmin %02dsec", (180 - timer / 60) / 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
 			DrawGraph(450, 60, MinImage, TRUE);
-			DrawNumber(280, 60, (180 - timer / 60) / 60);
+			DrawNumber(280, 60, (180 - timer / 60) / 60, NumberImages);
 			DrawGraph(570, 60, SecImage, TRUE);
-			DrawNumber(410, 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60);
+			DrawNumber(410, 60, 60 - (timer / 60) % 60 == 60 ? 0 : 60 - (timer / 60) % 60, NumberImages);
 		} // 制限時間を過ぎたら（＝延長期間）、延長中の文字を描画
 		else {
 			DrawGraph(450, 60, ExtendedTimeImage, TRUE);
@@ -1526,11 +1537,11 @@ void Boss::Draw() {
 	}
 
 	DrawGraph(360, 0, DeathCountImage, TRUE);
-	DrawNumber(470, 0, player.deathcount1);
+	DrawNumber(470, 0, player.deathcount1, NumberImages);
 	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
 
 	DrawGraph(570, 40, SecImage, TRUE);
-	DrawNumber(410, 40, GetLeftTime() / 60);
+	DrawNumber(410, 40, GetLeftTime() / 60, NumberImages);
 }
 
 // ゲームオーバーかどうか
@@ -1615,6 +1626,8 @@ int DeathCountNumberImages[10] = { -1 };
 // クリア時間を表示するための数字
 int ClearTimeNumberImages[10] = { -1 };
 
+#include "Ranking.h"
+
 STATE result() {
 	if (!resultflag) {
 		resultHandle = LoadGraph("Graphic/リザルト画面.png");
@@ -1625,6 +1638,14 @@ STATE result() {
 		if (DeathCountNumberImages[0] == -1) {
 			LoadDivGraph("Graphic/死亡回数リザルト数字.png", 10, 10, 1, 32, 36, DeathCountNumberImages);
 			LoadDivGraph("Graphic/秒数リザルト数字.png", 10, 10, 1, 32, 36, ClearTimeNumberImages);
+		}
+
+		if (CurrentSelection == GameMode_Easy) {
+			RegisterDeathCountRanking("", player.deathcount2, timer / 60, "Data/DeathCountRankPath.txt");
+			RegisterClearTimeRanking("", player.deathcount2, timer / 60, "Data/ClearRankPath.txt");
+		} else {
+			RegisterDeathCountRanking("", player.deathcount2, timer / 60, "Data/DeathCountRankPath_Hard.txt");
+			RegisterClearTimeRanking("", player.deathcount2, timer / 60, "Data/ClearTimeRankPath_Hard.txt");
 		}
 
 		resultflag = true;

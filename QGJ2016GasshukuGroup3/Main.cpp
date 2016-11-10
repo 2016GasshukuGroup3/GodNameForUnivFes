@@ -43,6 +43,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		case SETSUMEI:
 			nextstate = setsumei();
 			break;
+		case RANKING:
+			nextstate = ranking();
+			break;
 		default:
 			break;
 		}
