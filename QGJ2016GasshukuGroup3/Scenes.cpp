@@ -81,8 +81,8 @@ STATE title() {
 	}
 	else {
 		if (CurrentSelection == GameMode_None) {
-			// キーの入力待ち
-			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+		// キーの入力待ち
+		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 				TitleNoControlFlames = 0;
 				CurrentSelection = GameMode_Easy;
 				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
@@ -92,14 +92,14 @@ STATE title() {
 				if (TitleNoControlFlames > 60 * 10) {
 					TitleNoControlFlames = 0;
 					return RANKING;
-				}
+			}
 			}
 		} else {
 			// キーの入力待ち
 			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 				// 作成したフォントデータを削除する
 				DeleteFontToHandle(FontHandle);
-				// StopSoundMem(Sound1);
+					// StopSoundMem(Sound1);
 				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
 				return SETSUMEI;
 			}
@@ -141,8 +141,8 @@ STATE title() {
 		else {
 			DrawGraph(180, 400, PressStartImage, TRUE);
 			// DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
-			//ScreenFlip();//描画の反映
-		}
+		//ScreenFlip();//描画の反映
+	}
 	}
 
 	return TITLE;
@@ -477,15 +477,15 @@ STATE game() {
 			DeathCountImage = LoadGraph("Graphic/DEATH_COUNT.png");
 			ExtendedTimeImage = LoadGraph("Graphic/延長中.png");
 
-			jimen = LoadGraph("Graphic/Jimen.png");
-			hasi = LoadGraph("Graphic/Hasi.png");
-			InvisibleBlockImage = LoadGraph("Graphic/Kakusi_block.png");
-			for (int i = 0; i < 4; ++i) {
-				toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
-			}
-			ballHandle = LoadGraph("Graphic/ball.png");
-			JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
-			KilledSound = LoadSoundMem("音楽/合宿QGJ_SE_死亡.ogg");
+		jimen = LoadGraph("Graphic/Jimen.png");
+		hasi = LoadGraph("Graphic/Hasi.png");
+		InvisibleBlockImage = LoadGraph("Graphic/Kakusi_block.png");
+		for (int i = 0; i < 4; ++i) {
+			toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
+		}
+		ballHandle = LoadGraph("Graphic/ball.png");
+		JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
+		KilledSound = LoadSoundMem("音楽/合宿QGJ_SE_死亡.ogg");
 		}
 
 		for (auto& item : Lifts) {
@@ -537,7 +537,7 @@ STATE game() {
 		for (int i = 0; i < MapTilesHeight; ++i) {
 			for (int j = 0; j < MapTilesWidth; ++j) {
 				// マップエディタでのタイルごとの属性値が 0ならば、通常の初期化を行う。
-
+				
 				if (MapTiles[j][i] == 0) {
 					normalfloor[normalfloorcount] = Tile{ j * 32, i * 32, 0, 0, 32, 32 };
 					++normalfloorcount;
@@ -572,7 +572,7 @@ STATE game() {
 
 					++drillcount;
 				}
-
+				
 				// マップエディタでのタイルごとの属性値が 1ならば、MapTiles によるあたり判定を無効化。
 				if (tmp[i][j] == 1) {
 					MapTiles[j][i] = -1;
@@ -794,7 +794,7 @@ STATE game() {
 		else {
 			DrawGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
 		}
-
+		
 		//for (int i = 0; i < MapTilesHeight; ++i) {
 		//	for (int j = 0; j < MapTilesWidth; ++j) {
 		//		if (MapTiles[j][i] == 0) {
@@ -952,15 +952,17 @@ STATE game() {
 				}
 			}
 		}
+		if (timer <= 180*60) {
 		++timer;
+		}
 		//三分経ったらゲームオーバー
 		//if (timer >= 180 * 60) {
-		//titleflag = false;
-		//gameflag = false;
-		//if (CheckSoundMem(Sound2) == 1) {
-		//	StopSoundMem(Sound2);
-		//}
-		//return GAMEOVER;
+			//titleflag = false;
+			//gameflag = false;
+			//if (CheckSoundMem(Sound2) == 1) {
+			//	StopSoundMem(Sound2);
+			//}
+			//return GAMEOVER;
 		//}
 		mv.Draw();
 		particle.DrawParticles();
@@ -1002,7 +1004,8 @@ void Boss::Init() {
 	body = LoadGraph("Graphic/God.png");
 	arm = LoadGraph("Graphic/GodArm.png");
 	bgm = LoadSoundMem("音楽/合宿QGJ_ボス戦.ogg");
-	AddGraphicHandle("背景2", "Graphic/stage -boss-.png");
+	AddGraphicHandle("背景2","Graphic/stage -boss-.png");
+	AddGraphicHandle("heart", "Grahpic/heart.png");
 	ax = -40, ay = -100;
 	gameover = false;
 	time = 0;
@@ -1272,7 +1275,8 @@ void Boss::Update() {
 		player.dx = player.FloorDeltaX;
 	}
 	// ジャンプの処理
-	if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE) && player.fly == 0) {
+	if (getKeyPress(KEY_INPUT_SPACE,PRESS_ONCE) && player.fly == 0) {
+		PlaySoundMem(JumpSound, DX_PLAYTYPE_BACK);
 		player.dy = -20;
 		player.fly = 1;
 	}
@@ -1348,6 +1352,7 @@ void Boss::Update() {
 	//}
 	// 死亡処置
 	if (player.deathcount1 < player.deathcount2) {
+		PlaySoundMem(KilledSound, DX_PLAYTYPE_BACK);
 		player.deathcount1 = player.deathcount2;
 		for (int i = 0; i < 50; ++i) {
 			auto pt = new Particle(player.x, player.y);
@@ -1458,8 +1463,8 @@ void Boss::Draw() {
 
 	DrawGraph(0, 0, GetHandle("背景2"), TRUE);
 	if (hp > 0) {
-		DrawGraph(ax, ay, arm, TRUE);
-		DrawGraph(0, 0, body, TRUE);
+	DrawGraph(ax, ay, arm, TRUE);
+	DrawGraph(0, 0, body, TRUE);
 	}
 	else {
 		DrawGraph(-40, -100 + time, arm, TRUE);
@@ -1470,10 +1475,10 @@ void Boss::Draw() {
 	}*/
 	// 死亡回数の表示
 	//DrawFormatString(500, 40, blue, "%d", player.deathcount2);
-
+	
 	// 隕石のエフェクトの描画
 	DrawAsteroidEffect(Asteroids, MaxAsteroidNum);
-
+	
 	// プレイヤーの描画
 	if ((player.InvulnerableTime / 3) % 2 == 0) {
 		if (player.FaceDirection == Player::Direction::Direction_Left) {
@@ -1493,25 +1498,25 @@ void Boss::Draw() {
 		if (drill[i].x < 0) {
 			// 描画位置
 			const int DrawX = -drill[i].x / 2;
-
+	
 			DrawRotaGraph(DrawX + GraphSize / 2, drill[i].y + GraphSize / 2, 0.5, 0.0, toge[ReversedDirectionList[drill[i].dir]], TRUE);
 		}
 		else if (drill[i].x > 640) {
 			// 描画位置
 			int DrawX = 640 - (drill[i].x - 640) / 2;
-
+		
 			DrawRotaGraph(DrawX + GraphSize / 2, drill[i].y + GraphSize / 2, 0.5, 0.0, toge[ReversedDirectionList[drill[i].dir]], TRUE);
 		}
 		else if (drill[i].y < 0) {
 			// 描画位置
 			const int DrawY = -drill[i].y / 2;
-
+			
 			DrawRotaGraph(drill[i].x + GraphSize / 2, DrawY + GraphSize / 2, 0.5, 0.0, toge[ReversedDirectionList[drill[i].dir]], TRUE);
 		}
 		else if (drill[i].y > 480) {
 			// 描画位置s
 			const int DrawY = 640 - (drill[i].y - 640) / 2;
-
+		
 			DrawRotaGraph(drill[i].x + GraphSize / 2, DrawY + GraphSize / 2, 0.5, 0.0, toge[ReversedDirectionList[drill[i].dir]], TRUE);
 		}
 		else {
@@ -1539,7 +1544,9 @@ void Boss::Draw() {
 	DrawGraph(360, 0, DeathCountImage, TRUE);
 	DrawNumber(470, 0, player.deathcount1, NumberImages);
 	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
-
+	for (int i = 0; i <= player.deathcount3 - player.deathcount2 ; ++i) {
+		DrawGraph(600 - 35*i , 80, GetHandle("heart"), TRUE);
+	}
 	DrawGraph(570, 40, SecImage, TRUE);
 	DrawNumber(410, 40, GetLeftTime() / 60, NumberImages);
 }
@@ -1563,12 +1570,12 @@ bool Boss::IsOver() {
 bool Boss::IsEnd() {
 	// ゲームクリアの条件をここに追加
 	return time >= 60 * 10; //|| hp <= 0;
-							// この書き方は次の書き方と同じ
-							// if (time >= 60 * 30 || hp <= 0) {
-							//		return true;
-							// } else {
-							//		return false;
-							// }
+	// この書き方は次の書き方と同じ
+	// if (time >= 60 * 30 || hp <= 0) {
+	//		return true;
+	// } else {
+	//		return false;
+	// }
 }
 
 int Boss::GetLeftTime() const {
@@ -1663,8 +1670,8 @@ STATE result() {
 		// player.deathcount1 = 0;
 		// player.deathcount2 = 0;
 		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
-			player.deathcount1 = 0;
-			player.deathcount2 = 0;
+		player.deathcount1 = 0;
+		player.deathcount2 = 0;
 			titleflag = false;
 			bossflag = false;
 			gameflag = false;
