@@ -934,7 +934,9 @@ STATE game() {
 				}
 			}
 		}
-		++timer;
+		if (timer <= 180*60) {
+			++timer;
+		}
 		//三分経ったらゲームオーバー
 		//if (timer >= 180 * 60) {
 			//titleflag = false;
@@ -985,6 +987,7 @@ void Boss::Init() {
 	arm = LoadGraph("Graphic/GodArm.png");
 	bgm = LoadSoundMem("音楽/合宿QGJ_ボス戦.ogg");
 	AddGraphicHandle("背景2","Graphic/stage -boss-.png");
+	AddGraphicHandle("heart", "Grahpic/heart.png");
 	ax = -40, ay = -100;
 	gameover = false;
 	time = 0;
@@ -1252,6 +1255,7 @@ void Boss::Update() {
 	}
 	// ジャンプの処理
 	if (getKeyPress(KEY_INPUT_SPACE,PRESS_ONCE) && player.fly == 0) {
+		PlaySoundMem(JumpSound, DX_PLAYTYPE_BACK);
 		player.dy = -20;
 		player.fly = 1;
 	}
@@ -1327,6 +1331,7 @@ void Boss::Update() {
 	//}
 	// 死亡処置
 	if (player.deathcount1 < player.deathcount2) {
+		PlaySoundMem(KilledSound, DX_PLAYTYPE_BACK);
 		player.deathcount1 = player.deathcount2;
 		for (int i = 0; i < 50; ++i) {
 			auto pt = new Particle(player.x, player.y);
@@ -1505,7 +1510,9 @@ void Boss::Draw() {
 	DrawGraph(360, 0, DeathCountImage, TRUE);
 	DrawNumber(470, 0, player.deathcount1);
 	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
-
+	for (int i = 0; i <= player.deathcount3 - player.deathcount2 ; ++i) {
+		DrawGraph(600 - 35*i , 80, GetHandle("heart"), TRUE);
+	}
 	DrawGraph(570, 40, SecImage, TRUE);
 	DrawNumber(410, 40, GetLeftTime() / 60);
 }
