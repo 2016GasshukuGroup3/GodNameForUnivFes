@@ -1005,7 +1005,7 @@ void Boss::Init() {
 	arm = LoadGraph("Graphic/GodArm.png");
 	bgm = LoadSoundMem("âπäy/çáèhQGJ_É{ÉXêÌ.ogg");
 	AddGraphicHandle("îwåi2","Graphic/stage -boss-.png");
-	AddGraphicHandle("heart", "Grahpic/heart.png");
+	AddGraphicHandle("heart", "Graphic/heart.png");
 	ax = -40, ay = -100;
 	gameover = false;
 	time = 0;
