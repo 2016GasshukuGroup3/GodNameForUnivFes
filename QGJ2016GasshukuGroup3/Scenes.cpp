@@ -614,8 +614,8 @@ STATE game() {
 
 		//落下死を加える
 		if (player.y > 480) {
-			player.x = 0;
-			player.y = 382;
+			//player.x = 0;
+			//player.y = 382;
 			player.fly = 0;
 			player.deathcount2++;
 		}
@@ -634,6 +634,7 @@ STATE game() {
 		}
 
 		// あたり判定を行う。
+		player.fly = 1;
 		player.FloorDeltaX = 0;
 		player.CollidedDirection = Direction::None;
 
@@ -1269,6 +1270,7 @@ void Boss::Update() {
 	UpdateLift();
 
 	// あたり判定を行う。
+	player.fly = 1;
 	player.FloorDeltaX = 0;
 	player.CollidedDirection = Direction::None;
 
