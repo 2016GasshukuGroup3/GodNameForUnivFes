@@ -20,7 +20,8 @@ bool titleflag = false;
 int titleHandle;
 int TitleFlames, TitleNoControlFlames;
 int GameMode_EasyImage = -1, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
-int PressStartImage, CloudImage, SkyImage;
+float GameMode_EasyImage_DeltaX, GameMode_HardImage_DeltaX;
+int PressStartImage[9], CloudImage, SkyImage;
 
 int FontHandle;
 // 現在のEasyMode/HardMode選択状況
@@ -68,7 +69,8 @@ STATE title() {
 			GameMode_HardImage = GetHandle("ハードモード"); // LoadGraph("Graphic/ハードモード.png");
 			GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
 
-			PressStartImage = LoadGraph("Graphic/PRESS_START.png");
+			// PressStartImage = LoadGraph("Graphic/PRESS_START.png");
+			LoadDivGraph("Graphic/PRESS_START.png", 9, 9, 1, 50, 75, PressStartImage);
 		}
 
 		PlaySoundMem(Sound1, DX_PLAYTYPE_LOOP);
@@ -78,8 +80,27 @@ STATE title() {
 		titleflag = true;
 		TitleFlames = 0;
 		TitleNoControlFlames = 0;
+
+		GameMode_EasyImage_DeltaX = 0;
+		GameMode_HardImage_DeltaX = 0;
 	}
 	else {
+		if (GameMode_EasyImage_DeltaX != 0) {
+			GameMode_EasyImage_DeltaX = GameMode_EasyImage_DeltaX * -0.8f;
+
+			if (fabs(GameMode_EasyImage_DeltaX) < 1.0f) {
+				GameMode_EasyImage_DeltaX = 0.0f;
+			}
+		}
+
+		if (GameMode_HardImage_DeltaX != 0) {
+			GameMode_HardImage_DeltaX = GameMode_HardImage_DeltaX * -0.8f;
+
+			if (fabs(GameMode_HardImage_DeltaX) < 1.0f) {
+				GameMode_HardImage_DeltaX = 0.0f;
+			}
+		}
+
 		if (CurrentSelection == GameMode_None) {
 		// キーの入力待ち
 		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
@@ -107,9 +128,11 @@ STATE title() {
 			if (getKeyPress(KEY_INPUT_UP, PRESS_ONCE) || getKeyPress(KEY_INPUT_DOWN, PRESS_ONCE)) {
 				if (CurrentSelection == GameMode_Easy) {
 					CurrentSelection = GameMode_Hard;
+					GameMode_HardImage_DeltaX = 15.0f;
 				}
 				else {
 					CurrentSelection = GameMode_Easy;
+					GameMode_EasyImage_DeltaX = 15.0f;
 				}
 			}
 
@@ -130,16 +153,24 @@ STATE title() {
 
 		if (CurrentSelection != GameMode_None) {
 			if (CurrentSelection == GameMode_Easy) {
-				DrawGraph(300, 260, GameMode_EasySelectedImage, TRUE);
-				DrawGraph(300, 340, GameMode_HardImage, TRUE);
+				DrawGraph(300 + GameMode_EasyImage_DeltaX, 260, GameMode_EasySelectedImage, TRUE);
+				DrawGraph(300 + GameMode_HardImage_DeltaX, 340, GameMode_HardImage, TRUE);
 			}
 			else {
-				DrawGraph(300, 260, GameMode_EasyImage, TRUE);
-				DrawGraph(300, 340, GameMode_HardSelectedImage, TRUE);
+				DrawGraph(300 + GameMode_EasyImage_DeltaX, 260, GameMode_EasyImage, TRUE);
+				DrawGraph(300 + GameMode_HardImage_DeltaX, 340, GameMode_HardSelectedImage, TRUE);
 			}
 		}
 		else {
-			DrawGraph(180, 400, PressStartImage, TRUE);
+			// PressStart を表示
+			for (int i = 0; i < _countof(PressStartImage); i++) {
+				int LocalFlame = (TitleNoControlFlames - 15 * i) % 180;
+				int DeltaY = -(LocalFlame - 15) * (LocalFlame - 15) / 15 + 15;
+
+				if (DeltaY < 0) DeltaY = 0;
+				DrawGraph(180 + 50 * i, 400 - DeltaY, PressStartImage[i], TRUE);
+			}
+
 			// DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
 		//ScreenFlip();//描画の反映
 	}
