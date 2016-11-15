@@ -5,6 +5,8 @@
 #include "Lift.h"
 // グラフィックハンドルなどの管理をする関数を使えるようにします。
 #include "Asset.h"
+// シェーダを使った高度な描画処理を行う関数を使えるようにします。
+#include "Shader.h"
 #include <complex>
 #include <cmath>
 #include<algorithm>
@@ -18,8 +20,10 @@ int KetteiSound;
 
 bool titleflag = false;
 int titleHandle;
-int TitleFlames, TitleNoControlFlames;
-int GameMode_EasyImage = -1, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage;
+// TitleFlames: タイトル画面での経過フレーム数、TitleNoControlFlames: タイトル画面の Press Start が表示され続けている時間
+// TitleStartAnimationFlames: ゲームモード決定からシーンが切り替わるまでのフレーム数
+int TitleFlames, TitleNoControlFlames, TitleStartAnimationFlames;
+int GameMode_EasyImage = -1, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage, GameMode_EasyEdge, GameMode_HardEdge;
 float GameMode_EasyImage_DeltaX, GameMode_HardImage_DeltaX;
 int PressStartImage[9], CloudImage, SkyImage;
 
@@ -56,6 +60,8 @@ STATE title() {
 		AddMusicHandle("KetteiSound", "音楽/合宿QGJ_SE_決定音.ogg");
 		KetteiSound = GetHandle("KetteiSound");
 
+		AddMusicHandle("Jump", "音楽/合宿QGJ_SE_ジャンプ.ogg");
+
 		// 一度だけ初期化
 		if (GameMode_EasyImage == -1) {
 			SkyImage = LoadGraph("Graphic/タイトル空.png");
@@ -69,6 +75,9 @@ STATE title() {
 			GameMode_HardImage = GetHandle("ハードモード"); // LoadGraph("Graphic/ハードモード.png");
 			GameMode_HardSelectedImage = LoadGraph("Graphic/ハードモード選択中.png");
 
+			GameMode_EasyEdge = LoadGraphEdge("Graphic/イージーモード.png");
+			GameMode_HardEdge = LoadGraphEdge("Graphic/ハードモード.png");
+
 			// PressStartImage = LoadGraph("Graphic/PRESS_START.png");
 			LoadDivGraph("Graphic/PRESS_START.png", 9, 9, 1, 50, 75, PressStartImage);
 		}
@@ -80,11 +89,11 @@ STATE title() {
 		titleflag = true;
 		TitleFlames = 0;
 		TitleNoControlFlames = 0;
+		TitleStartAnimationFlames = 0;
 
 		GameMode_EasyImage_DeltaX = 0;
 		GameMode_HardImage_DeltaX = 0;
-	}
-	else {
+	} else {
 		if (GameMode_EasyImage_DeltaX != 0) {
 			GameMode_EasyImage_DeltaX = GameMode_EasyImage_DeltaX * -0.8f;
 
@@ -102,8 +111,8 @@ STATE title() {
 		}
 
 		if (CurrentSelection == GameMode_None) {
-		// キーの入力待ち
-		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+			// キーの入力待ち
+			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 				TitleNoControlFlames = 0;
 				CurrentSelection = GameMode_Easy;
 				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
@@ -113,33 +122,46 @@ STATE title() {
 				if (TitleNoControlFlames > 60 * 10) {
 					TitleNoControlFlames = 0;
 					return RANKING;
-			}
+				}
 			}
 		} else {
-			// キーの入力待ち
-			if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
-				// 作成したフォントデータを削除する
-				DeleteFontToHandle(FontHandle);
-					// StopSoundMem(Sound1);
-				PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
-				return SETSUMEI;
-			}
+			// 難易度未決定の時
+			if (TitleStartAnimationFlames == 0) {
+				// キーの入力待ち
+				if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+					// 作成したフォントデータを削除する
+					DeleteFontToHandle(FontHandle);
+						// StopSoundMem(Sound1);
+					PlaySoundMem(KetteiSound, DX_PLAYTYPE_BACK);
 
-			if (getKeyPress(KEY_INPUT_UP, PRESS_ONCE) || getKeyPress(KEY_INPUT_DOWN, PRESS_ONCE)) {
-				if (CurrentSelection == GameMode_Easy) {
-					CurrentSelection = GameMode_Hard;
-					GameMode_HardImage_DeltaX = 15.0f;
+					TitleStartAnimationFlames = 1;
+					// return SETSUMEI;
 				}
-				else {
-					CurrentSelection = GameMode_Easy;
-					GameMode_EasyImage_DeltaX = 15.0f;
-				}
-			}
 
-			if (getKeyPress(KEY_INPUT_ESCAPE, PRESS_ONCE)) {
-				CurrentSelection = GameMode_None;
-			}
-		}
+				if (getKeyPress(KEY_INPUT_UP, PRESS_ONCE) || getKeyPress(KEY_INPUT_DOWN, PRESS_ONCE)) {
+					PlaySoundMem(GetHandle("Jump"), DX_PLAYTYPE_BACK);
+
+					if (CurrentSelection == GameMode_Easy) {
+						CurrentSelection = GameMode_Hard;
+						GameMode_HardImage_DeltaX = 15.0f;
+					} else {
+						CurrentSelection = GameMode_Easy;
+						GameMode_EasyImage_DeltaX = 15.0f;
+					}
+				}
+
+				if (getKeyPress(KEY_INPUT_ESCAPE, PRESS_ONCE)) {
+					CurrentSelection = GameMode_None;
+				}
+			} else {
+				TitleStartAnimationFlames++;
+
+				if (TitleStartAnimationFlames > 60) {
+					TitleStartAnimationFlames = 0;
+					return SETSUMEI;
+				}
+			} // TitleStartAnimationFlames == 0
+		} // CurrentSelection == GameMode_None
 
 		TitleFlames++;
 
@@ -153,15 +175,43 @@ STATE title() {
 
 		if (CurrentSelection != GameMode_None) {
 			if (CurrentSelection == GameMode_Easy) {
-				DrawGraph(300 + GameMode_EasyImage_DeltaX, 260, GameMode_EasySelectedImage, TRUE);
-				DrawGraph(300 + GameMode_HardImage_DeltaX, 340, GameMode_HardImage, TRUE);
+				if (TitleStartAnimationFlames > 0) {
+
+					int GraphWidth, GraphHeight;
+					GetGraphSize(GameMode_EasyEdge, &GraphWidth, &GraphHeight);
+
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 256 - TitleStartAnimationFlames * 5);
+					DrawGraph(300, 260, GameMode_EasySelectedImage, TRUE);
+					DrawGraph(300, 340, GameMode_HardImage, TRUE);
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 256 - TitleStartAnimationFlames * 15);
+					DrawRotaGraph(300 + GraphWidth / 2, 260 + GraphHeight / 2, 1 + TitleStartAnimationFlames / 20.0, 0.0, GameMode_EasyEdge, TRUE);
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, (TitleStartAnimationFlames - 30) * 8);
+					DrawBox(0, 0, 640, 480, GetColor(0, 0, 0), TRUE);
+					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+				} else {
+					DrawGraph(300 + GameMode_EasyImage_DeltaX, 260, GameMode_EasySelectedImage, TRUE);
+					DrawGraph(300 + GameMode_HardImage_DeltaX, 340, GameMode_HardImage, TRUE);
+				}
+			} else {
+				if (TitleStartAnimationFlames > 0) {
+
+					int GraphWidth, GraphHeight;
+					GetGraphSize(GameMode_HardEdge, &GraphWidth, &GraphHeight);
+
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 256 - TitleStartAnimationFlames * 5);
+					DrawGraph(300, 260, GameMode_EasyImage, TRUE);
+					DrawGraph(300, 340, GameMode_HardSelectedImage, TRUE);
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 256 - TitleStartAnimationFlames * 15);
+					DrawRotaGraph(300 + GraphWidth / 2, 340 + GraphHeight / 2, 1 + TitleStartAnimationFlames / 20.0, 0.0, GameMode_HardEdge, TRUE);
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, (TitleStartAnimationFlames - 30) * 8);
+					DrawBox(0, 0, 640, 480, GetColor(0, 0, 0), TRUE);
+					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
+				} else {
+					DrawGraph(300 + GameMode_EasyImage_DeltaX, 260, GameMode_EasyImage, TRUE);
+					DrawGraph(300 + GameMode_HardImage_DeltaX, 340, GameMode_HardSelectedImage, TRUE);
+				}
 			}
-			else {
-				DrawGraph(300 + GameMode_EasyImage_DeltaX, 260, GameMode_EasyImage, TRUE);
-				DrawGraph(300 + GameMode_HardImage_DeltaX, 340, GameMode_HardSelectedImage, TRUE);
-			}
-		}
-		else {
+		} else {
 			// PressStart を表示
 			for (int i = 0; i < _countof(PressStartImage); i++) {
 				int LocalFlame = (TitleNoControlFlames - 15 * i) % 180;
@@ -172,9 +222,9 @@ STATE title() {
 			}
 
 			// DrawStringToHandle(200, 400, "PRESS SPACE !!", GetColor(0, 255, 255), FontHandle);
-		//ScreenFlip();//描画の反映
-	}
-	}
+			// ScreenFlip();//描画の反映
+		} // CurrentSelection != GameMode_None
+	} // !titleflag
 
 	return TITLE;
 }
@@ -515,7 +565,10 @@ STATE game() {
 			toge[i] = LoadGraph((string("Graphic/toge") + to_string(i) + ".png").c_str());
 		}
 		ballHandle = LoadGraph("Graphic/ball.png");
-		JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
+		// JumpSound = LoadSoundMem("音楽/合宿QGJ_SE_ジャンプ.ogg");
+		AddMusicHandle("Jump", "音楽/合宿QGJ_SE_ジャンプ.ogg");
+		JumpSound = GetHandle("Jump");
+
 		KilledSound = LoadSoundMem("音楽/合宿QGJ_SE_死亡.ogg");
 		}
 

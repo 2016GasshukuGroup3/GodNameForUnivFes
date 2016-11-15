@@ -2,6 +2,7 @@
 #include "Collider.h"
 #include "MapEditor.h"
 #include "Scenes.h"
+#include "Shader.h"
 #include <crtdbg.h>
 #include <cmath>
 
@@ -9,10 +10,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	ChangeWindowMode(TRUE);
 	SetMainWindowText("神の名は。 -God name.-");
+
+	SetUseDirect3DVersion(DX_DIRECT3D_9EX);
+	
 	DxLib_Init();
 	if (CheckHitKey(KEY_INPUT_F2)) {
 		ChangeWindowMode(FALSE);
 	}
+	InitializeShaderResourse();
 	SetDrawScreen(DX_SCREEN_BACK);
 	STATE nextstate = TITLE;
 	// メインループ
