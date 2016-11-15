@@ -870,8 +870,9 @@ STATE game() {
 
 
 		// ”wŒi‚Ì•`‰æ
-		DrawGraph((timer / 10) % 640, 0, BackImageHandle[stagenum - 1], FALSE);
-		DrawGraph((timer / 10) % 640 - 640, 0, BackImageHandle[stagenum - 1], FALSE);
+		DrawGraph(0, 0, BackImageHandle[stagenum - 1], FALSE);
+		// DrawGraph((timer / 10) % 640, 0, BackImageHandle[stagenum - 1], FALSE);
+		// DrawGraph((timer / 10) % 640 - 640, 0, BackImageHandle[stagenum - 1], FALSE);
 
 		if (player.FaceDirection == Player::Direction::Direction_Left) {
 			DrawTurnGraph(player.x, player.y, PlayerImageHandles[((player.AnimationFlame / 5) + 1) % 3], TRUE);
