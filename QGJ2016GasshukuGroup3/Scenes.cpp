@@ -183,8 +183,8 @@ STATE title() {
 					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 256 - TitleStartAnimationFlames * 5);
 					DrawGraph(300, 260, GameMode_EasySelectedImage, TRUE);
 					DrawGraph(300, 340, GameMode_HardImage, TRUE);
-					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 256 - TitleStartAnimationFlames * 15);
-					DrawRotaGraph(300 + GraphWidth / 2, 260 + GraphHeight / 2, 1 + TitleStartAnimationFlames / 20.0, 0.0, GameMode_EasyEdge, TRUE);
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128 - TitleStartAnimationFlames * 7);
+					DrawRotaGraph(300 + GraphWidth / 2, 260 + GraphHeight / 2, 1 + TitleStartAnimationFlames / 30.0, 0.0, GameMode_EasyEdge, TRUE);
 					SetDrawBlendMode(DX_BLENDMODE_ALPHA, (TitleStartAnimationFlames - 30) * 8);
 					DrawBox(0, 0, 640, 480, GetColor(0, 0, 0), TRUE);
 					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -201,8 +201,8 @@ STATE title() {
 					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 256 - TitleStartAnimationFlames * 5);
 					DrawGraph(300, 260, GameMode_EasyImage, TRUE);
 					DrawGraph(300, 340, GameMode_HardSelectedImage, TRUE);
-					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 256 - TitleStartAnimationFlames * 15);
-					DrawRotaGraph(300 + GraphWidth / 2, 340 + GraphHeight / 2, 1 + TitleStartAnimationFlames / 20.0, 0.0, GameMode_HardEdge, TRUE);
+					SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128 - TitleStartAnimationFlames * 7);
+					DrawRotaGraph(300 + GraphWidth / 2, 340 + GraphHeight / 2, 1 + TitleStartAnimationFlames / 30.0, 0.0, GameMode_HardEdge, TRUE);
 					SetDrawBlendMode(DX_BLENDMODE_ALPHA, (TitleStartAnimationFlames - 30) * 8);
 					DrawBox(0, 0, 640, 480, GetColor(0, 0, 0), TRUE);
 					SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 0);
@@ -269,7 +269,7 @@ Player player;
 bool Player::OnCollideFromSide(int& tileid, int i, int j) {
 	x = 0;
 
-	if (tileid == 3 || tileid == 4) {
+	if (tileid == 3 || tileid == 4 || tileid >= 9) {
 		return true;
 	}
 
@@ -292,7 +292,7 @@ bool Player::OnCollideFromSide(int& tileid, int i, int j) {
 }
 
 bool Player::OnCollideFromBottom(int& tileid, int i, int j) {
-	if (tileid == 3 || tileid == 4) {
+	if (tileid == 3 || tileid == 4 || tileid >= 9) {
 		return true;
 	}
 
@@ -325,7 +325,7 @@ bool Player::OnCollideFromTop(int& tileid, int i, int j) {
 		//*(tileobjptr - 15) = 2;
 		//*(tileobjptr + 15) = 2;
 	}
-	else if (tileid == 3) {
+	else if (tileid == 3 || tileid >= 9) {
 		return true;
 	}
 
@@ -1092,6 +1092,7 @@ void Boss::Init() {
 	bgm = LoadSoundMem("âπäy/çáèhQGJ_É{ÉXêÌ.ogg");
 	AddGraphicHandle("îwåi2","Graphic/stage -boss-.png");
 	AddGraphicHandle("heart", "Graphic/heart.png");
+	AddMusicHandle("BossDead", "âπäy/çáèhQGJ_SE_ÉSÉSÉSÉS...ogg");
 	ax = -40, ay = -100;
 	gameover = false;
 	time = 0;
@@ -1512,6 +1513,10 @@ void Boss::Update() {
 				}
 			}
 			time = 0;
+
+			if (hp == 1) {
+				PlaySoundMem(GetHandle("BossDead"), DX_PLAYTYPE_BACK);
+			}
 			break;
 		default:
 			break;
@@ -1705,6 +1710,10 @@ STATE boss() {
 			if (CheckSoundMem(enemy.bgm) == TRUE) {
 				StopSoundMem(enemy.bgm);
 			}
+			titleflag = false;
+			bossflag = false;
+			gameflag = false;
+			//resultflag = false;
 			return TITLE;
 		}
 	}
