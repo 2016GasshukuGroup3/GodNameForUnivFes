@@ -12,6 +12,7 @@ enum STATE {
 	RESULT,
 	GAMEOVER,
 	SETSUMEI,
+	PROMOTION,
 	RANKING
 };
 
@@ -46,6 +47,7 @@ STATE boss();
 STATE result();
 STATE gameover();
 STATE setsumei();
+STATE promotion();
 STATE ranking();
 
 /// <summary>w’è‚µ‚½À•W‚É”š‚ğ•`‰æ‚µ‚Ü‚·B</summary>

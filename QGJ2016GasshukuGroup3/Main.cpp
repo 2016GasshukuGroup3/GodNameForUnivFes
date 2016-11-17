@@ -51,6 +51,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 		case RANKING:
 			nextstate = ranking();
 			break;
+		case PROMOTION:
+			nextstate = promotion();
+			break;
 		default:
 			break;
 		}

@@ -166,3 +166,24 @@ STATE setsumei() {
 
 	return SETSUMEI;
 }
+
+bool PromotionIsInitialized = false;
+
+STATE promotion() {
+	if (!PromotionIsInitialized) {
+		AddGraphicHandle("Promotion Movie", "Graphic/è–âÓìÆâÊ.ogv");
+		SeekMovieToGraph(GetHandle("Promotion Movie"), 0);
+		PlayMovieToGraph(GetHandle("Promotion Movie"));
+
+		PromotionIsInitialized = true;
+	}
+
+	if (GetMovieStateToGraph(GetHandle("Promotion Movie")) != 1) {
+		PromotionIsInitialized = false;
+		return TITLE;
+	}
+	
+	DrawGraph(0, 0, GetHandle("Promotion Movie"), FALSE);
+
+	return PROMOTION;
+}

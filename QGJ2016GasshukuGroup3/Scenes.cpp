@@ -121,7 +121,8 @@ STATE title() {
 
 				if (TitleNoControlFlames > 60 * 10) {
 					TitleNoControlFlames = 0;
-					return RANKING;
+					return PROMOTION;
+					//return RANKING;
 				}
 			}
 		} else {
@@ -1559,8 +1560,8 @@ void Boss::Draw() {
 	DrawGraph(0, 0, body, TRUE);
 	}
 	else {
-		DrawGraph(-40, -100 + time, arm, TRUE);
-		DrawGraph(0, time - 30, body, TRUE);
+		DrawGraph(-40 + ((time / 2) % 2 - 0.5f) * 4, -100 + time, arm, TRUE);
+		DrawGraph(((time / 2) % 2 - 0.5f) * 4, time - 30, body, TRUE);
 	}
 	/*if (hp <= 0 && time >= 30) {
 	DrawGraph(0, 2 * time - 60, body, TRUE);
@@ -1636,7 +1637,7 @@ void Boss::Draw() {
 	DrawGraph(360, 0, DeathCountImage, TRUE);
 	DrawNumber(470, 0, player.deathcount1, NumberImages);
 	DrawGraph(27, 394, GetHandle("神のテロップ"), TRUE);
-	for (int i = 0; i <= player.deathcount3 - player.deathcount2 ; ++i) {
+	for (int i = 0; i < player.deathcount3 + (180 * 60 - timer) / 60 / 30 - player.deathcount2 ; ++i) {
 		DrawGraph(600 - 35*i , 80, GetHandle("heart"), TRUE);
 	}
 	DrawGraph(570, 40, SecImage, TRUE);
