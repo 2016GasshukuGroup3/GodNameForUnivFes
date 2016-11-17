@@ -280,7 +280,8 @@ bool Player::OnCollideFromSide(int& tileid, int i, int j) {
 				IntersectWith(Rectangle_t{ x, y, width, height })) {
 
 				// Ž€–S
-				deathcount2++;
+				if (deathcount1 == deathcount2)
+					deathcount2++;
 			}
 			else {
 				return true;
@@ -303,7 +304,8 @@ bool Player::OnCollideFromBottom(int& tileid, int i, int j) {
 				IntersectWith(Rectangle_t{ x, y, width, height })) {
 
 				// Ž€–S
-				deathcount2++;
+				if (deathcount1 == deathcount2)
+					deathcount2++;
 			}
 			else {
 				return true;
@@ -336,7 +338,8 @@ bool Player::OnCollideFromTop(int& tileid, int i, int j) {
 				IntersectWith(Rectangle_t{ x, y, width, height })) {
 
 				// Ž€–S
-				deathcount2++;
+				if (deathcount1 == deathcount2)
+					deathcount2++;
 			}
 			else {
 				return true;

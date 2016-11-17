@@ -174,12 +174,22 @@ STATE promotion() {
 		AddGraphicHandle("Promotion Movie", "Graphic/è–âÓìÆâÊ.ogv");
 		SeekMovieToGraph(GetHandle("Promotion Movie"), 0);
 		PlayMovieToGraph(GetHandle("Promotion Movie"));
+		StopSoundMem(GetHandle("Sound1"));
 
 		PromotionIsInitialized = true;
 	}
 
+	if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
+		PromotionIsInitialized = false;
+		PauseMovieToGraph(GetHandle("Promotion Movie"));
+		PlaySoundMem(GetHandle("KetteiSound"), DX_PLAYTYPE_BACK);
+		PlaySoundMem(GetHandle("Sound1"), DX_PLAYTYPE_LOOP);
+		return TITLE;
+	}
+
 	if (GetMovieStateToGraph(GetHandle("Promotion Movie")) != 1) {
 		PromotionIsInitialized = false;
+		PlaySoundMem(GetHandle("Sound1"), DX_PLAYTYPE_LOOP);
 		return TITLE;
 	}
 	
