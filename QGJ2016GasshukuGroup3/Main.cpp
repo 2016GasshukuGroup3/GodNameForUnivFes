@@ -14,11 +14,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	SetUseDirect3DVersion(DX_DIRECT3D_9EX);
 	
 	DxLib_Init();
-	if (CheckHitKey(KEY_INPUT_F2)) {
+	// if (CheckHitKey(KEY_INPUT_F2)) {
+	if (MessageBox(NULL, "フルスクリーンで起動しますか？", "神の名は", MB_YESNO | MB_ICONQUESTION) == IDYES) {
 		ChangeWindowMode(FALSE);
 	}
 	InitializeShaderResourse();
 	SetDrawScreen(DX_SCREEN_BACK);
+	SetGraphMode(640, 480, 32);
 	STATE nextstate = TITLE;
 	// メインループ
 	while (true) {
