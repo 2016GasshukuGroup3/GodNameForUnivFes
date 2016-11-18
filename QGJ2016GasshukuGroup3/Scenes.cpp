@@ -1744,6 +1744,7 @@ STATE result() {
 		AddGraphicHandle("リザルト画面スコア", "Graphic/リザルト画面スコア.png");
 		FontHandle = CreateFontToHandle(NULL, 40, 3, DX_FONTTYPE_ANTIALIASING);
 		FontHandle2 = CreateFontToHandle(NULL, 30, 3, DX_FONTTYPE_ANTIALIASING);
+		AddMusicHandle("エンディング", "音楽/神の名は。エンディング.ogg");
 
 		if (DeathCountNumberImages[0] == -1) {
 			LoadDivGraph("Graphic/死亡回数リザルト数字.png", 10, 10, 1, 32, 36, DeathCountNumberImages);
@@ -1757,6 +1758,8 @@ STATE result() {
 			RegisterDeathCountRanking("", player.deathcount2, timer / 60, "Data/DeathCountRankPath_Hard.txt");
 			RegisterClearTimeRanking("", player.deathcount2, timer / 60, "Data/ClearTimeRankPath_Hard.txt");
 		}
+
+		PlaySoundMem(GetHandle("エンディング"), DX_PLAYTYPE_LOOP);
 
 		resultflag = true;
 	}
@@ -1775,6 +1778,7 @@ STATE result() {
 		if (getKeyPress(KEY_INPUT_SPACE, PRESS_ONCE)) {
 		player.deathcount1 = 0;
 		player.deathcount2 = 0;
+			StopSoundMem(GetHandle("エンディング"));
 			titleflag = false;
 			bossflag = false;
 			gameflag = false;
