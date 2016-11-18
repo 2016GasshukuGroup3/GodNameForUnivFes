@@ -23,6 +23,7 @@ int titleHandle;
 // TitleFlames: タイトル画面での経過フレーム数、TitleNoControlFlames: タイトル画面の Press Start が表示され続けている時間
 // TitleStartAnimationFlames: ゲームモード決定からシーンが切り替わるまでのフレーム数
 int TitleFlames, TitleNoControlFlames, TitleStartAnimationFlames;
+int TitleTimeOutCount = 0;
 int GameMode_EasyImage = -1, GameMode_EasySelectedImage, GameMode_HardImage, GameMode_HardSelectedImage, GameMode_EasyEdge, GameMode_HardEdge;
 float GameMode_EasyImage_DeltaX, GameMode_HardImage_DeltaX;
 int PressStartImage[9], CloudImage, SkyImage;
@@ -121,8 +122,13 @@ STATE title() {
 
 				if (TitleNoControlFlames > 60 * 10) {
 					TitleNoControlFlames = 0;
-					return PROMOTION;
-					//return RANKING;
+					TitleTimeOutCount++;
+
+					if (TitleTimeOutCount % 2 == 0) {
+						return PROMOTION;
+					} else {
+						return RANKING;
+					}
 				}
 			}
 		} else {
