@@ -56,7 +56,7 @@ public:
 	int kind,time;
 	int pattern;
 	Pos p[4];
-	Rect() { kind = -1; };
+	Rect() { kind = -1; time = 0; pattern = 0; };
 	Rect(Pos p0, Pos p1, Pos p2, Pos p3){
 		p[0] = p0;//  p0------p1
 		p[1] = p1;//  |		  |

@@ -14,6 +14,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int){
 	SetUseDirect3DVersion(DX_DIRECT3D_9EX);
 	
 	DxLib_Init();
+	
+	// 実行中に画面が暗くなったり、スリープモードに移行したりしないようにする。
+	SetThreadExecutionState(ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED | ES_CONTINUOUS);
+	
 	// if (CheckHitKey(KEY_INPUT_F2)) {
 	if (MessageBox(NULL, "フルスクリーンで起動しますか？", "神の名は", MB_YESNO | MB_ICONQUESTION) == IDYES) {
 		ChangeWindowMode(FALSE);

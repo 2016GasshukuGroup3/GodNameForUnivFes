@@ -357,7 +357,7 @@ struct Tile {
 	int dir, NeedleDirection;
 };
 const int TILE_MAX = 80;
-Tile normalfloor[TILE_MAX];
+Tile normalfloor[TILE_MAX * 2];
 Tile ball[TILE_MAX];
 Tile bridge[TILE_MAX];
 Tile drill[TILE_MAX];
@@ -431,7 +431,7 @@ void drillAttack(Tile* drill) {
 	for (int i = 0; i < drillcount; ++i) {
 		int dir = drill[i].dir;
 		if (drill[i].flag &&  IsDrillHit(player, drill[i])) {
-			MapTiles[drill[i].x / 32][drill[i].y / 32] = -1;
+			// MapTiles[drill[i].x / 32][drill[i].y / 32] = -1;
 			drill[i].dx = -10 * dx[dir];
 			drill[i].dy = -10 * dy[dir];
 			drill[i].flag = false;
@@ -580,18 +580,18 @@ STATE game() {
 			item.Reset();
 		}
 
-		Lifts[0].MyPattern = Lift::Side;
-		Lifts[0].X = 0;
-		Lifts[0].Y = 32 * 12;
-		Lifts[1].MyPattern = Lift::Side;
-		Lifts[1].X = 32 * 6;
-		Lifts[1].Y = 32 * 6;
-		Lifts[2].MyPattern = Lift::Rotation;
-		Lifts[2].X = 32 * 10;
-		Lifts[2].Y = 32 * 4;
-		Lifts[3].MyPattern = Lift::UpAndDown;
-		Lifts[3].X = 32;
-		Lifts[3].Y = 32 * 6;
+		//Lifts[0].MyPattern = Lift::Side;
+		//Lifts[0].X = 0;
+		//Lifts[0].Y = 32 * 12;
+		//Lifts[1].MyPattern = Lift::Side;
+		//Lifts[1].X = 32 * 6;
+		//Lifts[1].Y = 32 * 6;
+		//Lifts[2].MyPattern = Lift::Rotation;
+		//Lifts[2].X = 32 * 10;
+		//Lifts[2].Y = 32 * 4;
+		//Lifts[3].MyPattern = Lift::UpAndDown;
+		//Lifts[3].X = 32;
+		//Lifts[3].Y = 32 * 6;
 		LiftCount = 0;
 
 		// player ‚ð‰Šú‰»
@@ -1335,6 +1335,9 @@ void Boss::Update() {
 			if (tile[i][j].pattern == 1) {
 				MapTiles[i][j] = 0;
 			}
+			else if (tile[i][j].pattern != 0) {
+				//throw std::invalid_argument("invalid value!");
+			}
 			if (MapTiles[i][j] == 5) {
 				if (Checkhitchery(player.x, player.y, 32, 32, i * 32, j * 32, 32, 32)) {
 					++player.deathcount1;
@@ -1749,7 +1752,7 @@ STATE result() {
 
 		if (CurrentSelection == GameMode_Easy) {
 			RegisterDeathCountRanking("", player.deathcount2, timer / 60, "Data/DeathCountRankPath.txt");
-			RegisterClearTimeRanking("", player.deathcount2, timer / 60, "Data/ClearRankPath.txt");
+			RegisterClearTimeRanking("", player.deathcount2, timer / 60, "Data/ClearTimeRankPath.txt");
 		} else {
 			RegisterDeathCountRanking("", player.deathcount2, timer / 60, "Data/DeathCountRankPath_Hard.txt");
 			RegisterClearTimeRanking("", player.deathcount2, timer / 60, "Data/ClearTimeRankPath_Hard.txt");
